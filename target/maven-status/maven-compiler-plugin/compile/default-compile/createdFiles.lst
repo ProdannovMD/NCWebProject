@@ -1,0 +1,12 @@
+com\netcracker\application\model\UsersTask.class
+com\netcracker\application\model\ActiveTask.class
+com\netcracker\application\NcWebProjectApplication.class
+com\netcracker\application\repository\UsersTaskRepository.class
+com\netcracker\application\model\Task.class
+com\netcracker\application\repository\ActiveTaskRepository.class
+com\netcracker\application\repository\UserRepository.class
+com\netcracker\application\configuration\SecurityConfig.class
+com\netcracker\application\repository\TaskRepository.class
+com\netcracker\application\controllers\IndexController.class
+com\netcracker\application\model\User.class
+com\netcracker\application\configuration\MySQLConfig.class
