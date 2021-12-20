@@ -1,10 +1,14 @@
 package com.netcracker.application.model;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @Entity
@@ -28,6 +32,19 @@ public class User implements UserDetails {
             inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")}
     )
     private Set<Role> roles;
+
+    @OneToMany(mappedBy = "user")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<UsersTask> usersTasks;
+
+//    @ManyToMany
+//    @JoinTable(
+//            name = "USERS_TASKS",
+//            joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
+//            inverseJoinColumns = {@JoinColumn(name = "task_id", referencedColumnName = "task_id")}
+//    )
+//    @LazyCollection(LazyCollectionOption.FALSE)
+//    private transient List<ActiveTask> activeTasks;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -83,6 +100,14 @@ public class User implements UserDetails {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
+    public List<UsersTask> getUsersTasks() {
+        return usersTasks;
+    }
+
+//    public List<ActiveTask> getActiveTasks() {
+//        return activeTasks;
+//    }
 
     @Override
     public String toString() {

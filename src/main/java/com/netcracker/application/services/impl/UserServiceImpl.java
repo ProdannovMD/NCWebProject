@@ -8,6 +8,7 @@ import com.netcracker.application.repository.UserRepository;
 import com.netcracker.application.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +22,8 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
     private static final long USER_ROLE_ID = 1L;
 
-    private  UserRepository userRepository;
-    private RoleRepository roleRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private  PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -45,8 +46,20 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Override
+    public User getCurrentUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        User currentUser = null;
+        if (userDetails instanceof User) {
+            currentUser = (User) userDetails;
+        }
+        return currentUser;
     }
 
     @Override

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:include="layout :: page" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${task.task.name}"></title>
+</head>
+<body>
+<div th:fragment="content">
+    <div style="margin-top: 20%">
+        <p th:text="${user.username}"></p>
+        <p th:text="${task.task.name}"></p>
+        <a th:href="@{/profile}">Back</a>
+    </div>
+</div>
+</body>
+</html>
