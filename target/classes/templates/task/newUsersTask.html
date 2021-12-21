@@ -15,7 +15,7 @@
         <label for="parent">Task Parent</label>
         <select id="parent" th:field="*{parent}">
             <option value="0">None</option>
-            <option th:each="task : ${tasks}" th:text="${task.task.name}" th:value="${task.id}"></option>
+            <option th:each="task : ${tasks}" th:if="${task.parentTask} == null" th:text="${task.task.name}" th:value="${task.id}"></option>
         </select>
         <input type="submit" value="Save">
     </form>

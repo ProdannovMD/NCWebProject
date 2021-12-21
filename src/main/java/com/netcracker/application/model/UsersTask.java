@@ -1,5 +1,6 @@
 package com.netcracker.application.model;
 
+import javafx.util.Pair;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -89,9 +90,13 @@ public class UsersTask {
         this.id = id;
     }
 
-    public String getActiveTime() {
+    public boolean isActive() {
+        return usages.stream().anyMatch(usage -> Objects.isNull(usage.getEndTime()));
+    }
+
+    private Pair<Long, Long> getActiveTimeRaw() {
         if (usages.size() == 0)
-            return "0h 0m";
+            return new Pair<>(0L, 0L);
 
         long hours = 0;
         long minutes = 0;
@@ -109,6 +114,25 @@ public class UsersTask {
         }
         hours = timeHours.convert(minutes, TimeUnit.MINUTES);
         minutes = Math.floorMod(minutes, 60);
+        return new Pair<>(hours, minutes);
+    }
+
+    public String getActiveTime() {
+        if (usages.size() == 0)
+            return "0h 0m";
+
+        Pair<Long, Long> activeTimeRaw = getActiveTimeRaw();
+        long hours = activeTimeRaw.getKey();
+        long minutes = activeTimeRaw.getValue();
+        for (UsersTask childrenTask : childrenTasks) {
+            Pair<Long, Long> childrenActiveTimeRaw = childrenTask.getActiveTimeRaw();
+            hours += childrenActiveTimeRaw.getKey();
+            minutes += childrenActiveTimeRaw.getValue();
+        }
+        TimeUnit timeHours = TimeUnit.HOURS;
+        hours += timeHours.convert(minutes, TimeUnit.MINUTES);
+        minutes = Math.floorMod(minutes, 60);
+
         return String.format("%dh %dm", hours, minutes);
     }
 

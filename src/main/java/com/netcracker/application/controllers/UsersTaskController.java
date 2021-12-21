@@ -8,6 +8,7 @@ import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,11 +33,11 @@ public class UsersTaskController {
     }
 
     @GetMapping("/tasks/{id}")
-    public String getUsersTask(@PathVariable Long id, Model model) throws IllegalAccessException {
+    public String getUsersTask(@PathVariable Long id, Model model) {
         User currentUser = userService.getCurrentUser();
         UsersTask usersTask = usersTaskService.getUsersTaskById(id);
         if (!currentUser.getId().equals(usersTask.getUser().getId()))
-            throw new IllegalAccessException();
+            throw new AccessDeniedException("");
 
         model.addAttribute("user", currentUser);
         model.addAttribute("task", usersTask);
@@ -44,13 +45,16 @@ public class UsersTaskController {
     }
 
     @GetMapping("/tasks")
-    public String newUsersTaskForm(Model model) {
+    public String newUsersTaskForm(Model model, Long parent) {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> tasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
         System.out.println(tasks);
 
+        UsersTaskForm form = new UsersTaskForm();
+        if (Objects.nonNull(parent))
+            form.setParent(parent);
         model.addAttribute("tasks", tasks);
-        model.addAttribute("form", new UsersTaskForm());
+        model.addAttribute("form", form);
         return "task/newUsersTask";
     }
 
@@ -84,9 +88,7 @@ public class UsersTaskController {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> userTasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
         UsersTask activeTask = userTasks.stream()
-                .filter(task ->
-                        task.getUsages().stream().anyMatch(usage -> Objects.isNull(usage.getEndTime()))
-                )
+                .filter(UsersTask::isActive)
                 .findFirst().orElseThrow(IllegalStateException::new);
 
         model.addAttribute("user", currentUser);
@@ -106,5 +108,13 @@ public class UsersTaskController {
                 .findFirst().orElseThrow(IllegalStateException::new);
 
         return String.format("redirect:/profile/tasks/%d", activeTask.getId());
+    }
+
+    @PostMapping("/tasks/active")
+    public String setActiveTask(@RequestParam("task") Long taskId) {
+        User currentUser = userService.getCurrentUser();
+        UsersTask task = usersTaskService.getUsersTaskById(taskId);
+        usersTaskService.setUsersTaskActiveByUserId(currentUser.getId(), task);
+        return "redirect:/profile";
     }
 }

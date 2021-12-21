@@ -9,5 +9,7 @@ public interface UsersTaskService {
 
     List<UsersTask> getUsersTasksByUserId(Long id);
 
+    void setUsersTaskActiveByUserId(Long id, UsersTask usersTask);
+
     void saveUsersTask(UsersTask usersTask);
 }
