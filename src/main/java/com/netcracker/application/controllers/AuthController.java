@@ -1,7 +1,7 @@
 package com.netcracker.application.controllers;
 
 import com.netcracker.application.controllers.forms.UserRegistrationForm;
-import com.netcracker.application.controllers.validators.UserRegistrationValidator;
+import com.netcracker.application.controllers.validators.UserRegistrationFormValidator;
 import com.netcracker.application.services.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     private final UserServiceImpl userService;
-    private final UserRegistrationValidator userRegistrationValidator;
+    private final UserRegistrationFormValidator userRegistrationValidator;
 
     @Autowired
-    public AuthController(UserRegistrationValidator userRegistrationValidator, UserServiceImpl userService) {
+    public AuthController(UserRegistrationFormValidator userRegistrationValidator, UserServiceImpl userService) {
         this.userRegistrationValidator = userRegistrationValidator;
         this.userService = userService;
     }

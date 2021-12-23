@@ -4,10 +4,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 public class UserRegistrationForm {
-    @NotBlank(message = "User name must not be blank")
-    @Size(max = 50, message = "User name should be under 50 characters")
+    @NotBlank(message = "{registration.username.blank}")
+    @Size(max = 50, message = "{registration.username.long}")
     private String name;
-    @Size(min = 5, message = "Password length must be more than 5 characters")
+    @Size(min = 5, message = "{registration.password.short}")
     private CharSequence password;
     private CharSequence confirmPassword;
 
@@ -28,7 +28,7 @@ public class UserRegistrationForm {
         this.name = name;
     }
 
-    public @Size(min = 5, message = "Password length must be more than 5 characters") CharSequence getPassword() {
+    public CharSequence getPassword() {
         return password;
     }
 

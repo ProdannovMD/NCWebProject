@@ -1,11 +1,20 @@
 package com.netcracker.application.controllers.forms;
 
-import org.hibernate.validator.constraints.Length;
+import javax.validation.constraints.Size;
 
 public class UsersTaskForm {
-    @Length(max = 50)
+    private Long id;
+    @Size(max = 50, message = "{tasks.name.long}")
     private String name;
     private Long parent;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

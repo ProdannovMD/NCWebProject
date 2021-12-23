@@ -1,6 +1,7 @@
 package com.netcracker.application.controllers;
 
 import com.netcracker.application.controllers.forms.UsersTaskForm;
+import com.netcracker.application.controllers.validators.UsersTaskFormValidator;
 import com.netcracker.application.model.Task;
 import com.netcracker.application.model.User;
 import com.netcracker.application.model.UsersTask;
@@ -12,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,12 +27,23 @@ public class UsersTaskController {
 
     private final UserService userService;
     private final UsersTaskService usersTaskService;
+    private UsersTaskFormValidator usersTaskFormValidator;
 
     @Autowired
     public UsersTaskController(UserService userService, UsersTaskService usersTaskService) {
         this.userService = userService;
         this.usersTaskService = usersTaskService;
     }
+
+    @Autowired
+    public void setUsersTaskFormValidator(UsersTaskFormValidator usersTaskFormValidator) {
+        this.usersTaskFormValidator = usersTaskFormValidator;
+    }
+
+//    @InitBinder
+//    protected void initBinder(WebDataBinder binder) {
+//        binder.addValidators(usersTaskFormValidator);
+//    }
 
     @GetMapping("/tasks/{id}")
     public String getUsersTask(@PathVariable Long id, Model model) {
@@ -44,35 +57,52 @@ public class UsersTaskController {
         return "task/usersTask";
     }
 
-    @GetMapping("/tasks")
-    public String newUsersTaskForm(Model model, Long parent) {
+    @GetMapping("/tasks/save")
+    public String saveUsersTaskForm(Model model, Long parent, Long id) {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> tasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
         System.out.println(tasks);
 
+
         UsersTaskForm form = new UsersTaskForm();
-        if (Objects.nonNull(parent))
-            form.setParent(parent);
+        if (Objects.isNull(id)) {
+            if (Objects.nonNull(parent))
+                form.setParent(parent);
+        }
+        else {
+            UsersTask task = usersTaskService.getUsersTaskById(id);
+            if (!currentUser.getId().equals(task.getUser().getId()))
+                throw new AccessDeniedException("");
+
+            if (!task.getTask().getModifiable())
+                throw new AccessDeniedException("Task is not modifiable");
+
+            form.setId(task.getId());
+            if (Objects.nonNull(task.getParentTask()))
+                form.setParent(task.getParentTask().getId());
+            form.setName(task.getTask().getName());
+        }
         model.addAttribute("tasks", tasks);
         model.addAttribute("form", form);
-        return "task/newUsersTask";
+        return "task/saveUsersTask";
     }
 
-    @PostMapping("/tasks")
-    public String newUsersTask(
+    @PostMapping("/tasks/save")
+    public String saveUsersTask(
             @Valid @ModelAttribute("form") UsersTaskForm form,
             BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             List<String> errorMessages = bindingResult.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.toList());
             model.addAttribute("errors", errorMessages);
-            return "task/newUsersTask";
+            return "task/saveUsersTask";
         }
         User currentUser = userService.getCurrentUser();
         Task newTask = new Task();
         newTask.setName(form.getName());
 
         UsersTask usersTask = new UsersTask();
+        usersTask.setId(form.getId());
         usersTask.setTask(newTask);
         usersTask.setUser(currentUser);
         if (form.getParent() > 0) {
@@ -80,6 +110,18 @@ public class UsersTaskController {
             usersTask.setParentTask(parentTask);
         }
         usersTaskService.saveUsersTask(usersTask);
+        return "redirect:/profile";
+    }
+
+    @PostMapping("/tasks/delete")
+    public String deleteUsersTask(@RequestParam("task") Long id) {
+        User currentUser = userService.getCurrentUser();
+        UsersTask task = usersTaskService.getUsersTaskById(id);
+        if (!task.getUser().getId().equals(currentUser.getId()))
+            throw new AccessDeniedException("Invalid access to a task");
+
+        usersTaskService.deleteUsersTaskById(id);
+
         return "redirect:/profile";
     }
 
@@ -108,6 +150,11 @@ public class UsersTaskController {
                 .findFirst().orElseThrow(IllegalStateException::new);
 
         return String.format("redirect:/profile/tasks/%d", activeTask.getId());
+    }
+
+    @GetMapping("/tasks")
+    public String tasks() {
+        return "redirect:/profile";
     }
 
     @PostMapping("/tasks/active")

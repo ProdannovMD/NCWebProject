@@ -11,17 +11,17 @@
 <div th:fragment="content">
     <div style="margin-top: 20%">
         <div>
-            <p th:utext="${task.parentTask} == null ? 'Task: ' : 'Subtask: '"></p>
-            <p th:text="${task.task.name}"></p>
-            <p>Total time: </p>
-            <p th:text="${task.getActiveTime()}"></p>
+            <div th:utext="${task.parentTask} == null ? 'Task: ' : 'Subtask: '"></div>
+            <div th:text="${task.task.name}"></div>
+            <div>Total time: </div>
+            <div th:text="${task.getActiveTime()}"></div>
         </div>
         <div th:if="${task.parentTask == null and task.childrenTasks.size() > 0}">
             <label for="subtasks">Subtasks:</label>
             <ul id="subtasks">
                 <li th:each="subtask : ${task.childrenTasks}">
                     <a th:href="|@{/profile/tasks/}${subtask.getId()}|" th:text="${subtask.task.name}"></a>
-                    <p th:text="${subtask.getActiveTime()}"></p>
+                    <div th:text="${subtask.getActiveTime()}"></div>
                 </li>
             </ul>
         </div>

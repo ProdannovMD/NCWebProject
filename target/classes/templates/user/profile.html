@@ -17,8 +17,13 @@
             <li class="list-group-item list-group-item-primary list-group-item-action" th:each="task : ${tasks}" th:if="${task.parentTask} == null">
                 <div class="container-fluid d-inline-block">
                     <a class="navbar-brand" th:href="|@{/profile/tasks/}${task.getId()}|" th:text="${task.task.name}"></a>
-                    <p th:text="${task.getActiveTime()}"></p>
-                    <p th:if="${task.isActive()}">Active</p>
+                    <div th:text="${task.getActiveTime()}"></div>
+                    <div th:if="${task.isActive()}">Active</div>
+                    <a th:if="${task.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${task.id}|">Edit</a>
+                    <form th:if="${task.task.modifiable}" th:method="POST" th:action="@{/profile/tasks/delete}">
+                        <input th:value="${task.id}" name="task" hidden>
+                        <input type="submit" value="Delete">
+                    </form>
                     <form th:unless="${task.isActive()}" th:method="POST" th:action="@{/profile/tasks/active}">
                         <input th:value="${task.id}" name="task" hidden>
                         <input type="submit" value="Set active">
@@ -30,8 +35,13 @@
                         <li class="list-group-item list-group-item-action" th:each="subtask : ${task.getChildrenTasks()}">
                             <div>
                                 <a th:href="|@{/profile/tasks/}${subtask.getId()}|" th:text="${subtask.task.name}"></a>
-                                <p th:text="${subtask.getActiveTime()}"></p>
-                                <p th:if="${subtask.isActive()}">Active</p>
+                                <div th:text="${subtask.getActiveTime()}"></div>
+                                <div th:if="${subtask.isActive()}">Active</div>
+                                <a th:if="${subtask.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${subtask.id}|">Edit</a>
+                                <form th:if="${subtask.task.modifiable}" th:method="POST" th:action="@{/profile/tasks/delete}">
+                                    <input th:value="${subtask.id}" name="task" hidden>
+                                    <input type="submit" value="Delete">
+                                </form>
                                 <form th:unless="${subtask.isActive()}" th:method="POST"
                                       th:action="@{/profile/tasks/active}">
                                     <input th:value="${subtask.id}" name="task" hidden>
@@ -42,7 +52,7 @@
                     </ul>
                 </div>
             </li>
-            <a th:href="@{/profile/tasks}">Create new task</a>
+            <a th:href="@{/profile/tasks/save}">Create new task</a>
         </ul>
     </div>
 </body>

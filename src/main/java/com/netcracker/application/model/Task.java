@@ -13,6 +13,17 @@ public class Task {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Column(name = "modifiable")
+    private Boolean modifiable = true;
+
+    public Boolean getModifiable() {
+        return modifiable;
+    }
+
+    public void setModifiable(Boolean modifiable) {
+        this.modifiable = modifiable;
+    }
+
     public String getName() {
         return name;
     }

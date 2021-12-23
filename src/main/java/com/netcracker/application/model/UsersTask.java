@@ -94,14 +94,11 @@ public class UsersTask {
         return usages.stream().anyMatch(usage -> Objects.isNull(usage.getEndTime()));
     }
 
-    private Pair<Long, Long> getActiveTimeRaw() {
+    private Long getActiveTimeRaw() {
         if (usages.size() == 0)
-            return new Pair<>(0L, 0L);
+            return 0L;
 
-        long hours = 0;
-        long minutes = 0;
-        TimeUnit timeHours = TimeUnit.HOURS;
-        TimeUnit timeMinutes = TimeUnit.MINUTES;
+        long seconds = 0;
         for (ActiveTask usage : usages) {
             Instant startTime = usage.getStartTime();
             Instant endTime = usage.getEndTime();
@@ -110,28 +107,23 @@ public class UsersTask {
             LocalDateTime startDate = LocalDateTime.ofInstant(startTime, ZoneId.systemDefault());
             LocalDateTime endDate = LocalDateTime.ofInstant(endTime, ZoneId.systemDefault());
             Duration duration = Duration.between(startDate, endDate);
-            minutes += timeMinutes.convert(duration.getSeconds(), TimeUnit.SECONDS);
+            seconds += duration.getSeconds();
         }
-        hours = timeHours.convert(minutes, TimeUnit.MINUTES);
-        minutes = Math.floorMod(minutes, 60);
-        return new Pair<>(hours, minutes);
+        return seconds;
     }
 
     public String getActiveTime() {
         if (usages.size() == 0)
             return "0h 0m";
 
-        Pair<Long, Long> activeTimeRaw = getActiveTimeRaw();
-        long hours = activeTimeRaw.getKey();
-        long minutes = activeTimeRaw.getValue();
+        long seconds = getActiveTimeRaw();
         for (UsersTask childrenTask : childrenTasks) {
-            Pair<Long, Long> childrenActiveTimeRaw = childrenTask.getActiveTimeRaw();
-            hours += childrenActiveTimeRaw.getKey();
-            minutes += childrenActiveTimeRaw.getValue();
+            seconds += childrenTask.getActiveTimeRaw();
         }
         TimeUnit timeHours = TimeUnit.HOURS;
-        hours += timeHours.convert(minutes, TimeUnit.MINUTES);
-        minutes = Math.floorMod(minutes, 60);
+        TimeUnit timeMinutes = TimeUnit.MINUTES;
+        long hours = timeHours.convert(seconds, TimeUnit.SECONDS);
+        long minutes = Math.floorMod(timeMinutes.convert(seconds, TimeUnit.SECONDS), 60);
 
         return String.format("%dh %dm", hours, minutes);
     }
