@@ -28,7 +28,7 @@
                         <input th:value="${task.id}" name="task" hidden>
                         <input type="submit" value="Set active">
                     </form>
-                    <a th:href="|@{/profile/tasks?parent=}${task.getId()}|">Create subtask</a>
+                    <a th:href="|@{/profile/tasks/save?parent=}${task.getId()}|">Create subtask</a>
                 </div>
                 <div>
                     <ul class="list-group">

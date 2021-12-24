@@ -9,6 +9,7 @@ import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,11 +29,17 @@ public class UsersTaskController {
     private final UserService userService;
     private final UsersTaskService usersTaskService;
     private UsersTaskFormValidator usersTaskFormValidator;
+    private ConversionService conversionService;
 
     @Autowired
     public UsersTaskController(UserService userService, UsersTaskService usersTaskService) {
         this.userService = userService;
         this.usersTaskService = usersTaskService;
+    }
+
+    @Autowired
+    public void setConversionService(ConversionService conversionService) {
+        this.conversionService = conversionService;
     }
 
     @Autowired
@@ -71,17 +78,9 @@ public class UsersTaskController {
         }
         else {
             UsersTask task = usersTaskService.getUsersTaskById(id);
-            if (!currentUser.getId().equals(task.getUser().getId()))
-                throw new AccessDeniedException("");
-
-            if (!task.getTask().getModifiable())
-                throw new AccessDeniedException("Task is not modifiable");
-
-            form.setId(task.getId());
-            if (Objects.nonNull(task.getParentTask()))
-                form.setParent(task.getParentTask().getId());
-            form.setName(task.getTask().getName());
+            form = conversionService.convert(task, UsersTaskForm.class);
         }
+        
         model.addAttribute("tasks", tasks);
         model.addAttribute("form", form);
         return "task/saveUsersTask";
@@ -97,19 +96,8 @@ public class UsersTaskController {
             model.addAttribute("errors", errorMessages);
             return "task/saveUsersTask";
         }
-        User currentUser = userService.getCurrentUser();
-        Task newTask = new Task();
-        newTask.setName(form.getName());
 
-        UsersTask usersTask = new UsersTask();
-        usersTask.setId(form.getId());
-        usersTask.setTask(newTask);
-        usersTask.setUser(currentUser);
-        if (form.getParent() > 0) {
-            UsersTask parentTask = usersTaskService.getUsersTaskById(form.getParent());
-            usersTask.setParentTask(parentTask);
-        }
-        usersTaskService.saveUsersTask(usersTask);
+        usersTaskService.saveUsersTask(conversionService.convert(form, UsersTask.class));
         return "redirect:/profile";
     }
 

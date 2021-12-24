@@ -11,12 +11,25 @@
 <div th:fragment="content">
     <div style="margin-top: 20%">
         <div>
-            <div th:utext="${task.parentTask} == null ? 'Task: ' : 'Subtask: '"></div>
-            <div th:text="${task.task.name}"></div>
-            <div>Total time: </div>
-            <div th:text="${task.getActiveTime()}"></div>
+            <div th:utext="(${task.parentTask} == null ? 'Task: ' : 'Subtask: ')+${task.task.name}+(${task.isActive()} ? ' (Active)' : '')"></div>
+            <div th:text="|Total time: ${task.getActiveTime()}|"></div>
+            <a th:if="${task.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${task.id}|">Edit</a>
+            <form th:if="${task.task.modifiable}" th:method="POST" th:action="@{/profile/tasks/delete}">
+                <input th:value="${task.id}" name="task" hidden>
+                <input type="submit" value="Delete">
+            </form>
+            <form th:unless="${task.isActive()}" th:method="POST" th:action="@{/profile/tasks/active}">
+                <input th:value="${task.id}" name="task" hidden>
+                <input type="submit" value="Set active">
+            </form>
+
         </div>
-        <div th:if="${task.parentTask == null and task.childrenTasks.size() > 0}">
+        <div th:unless="${task.parentTask == null}">
+            Parent task:
+            <a th:text="${task.parentTask.task.name}" th:href="|@{/profile/tasks/}${task.parentTask.id}|"></a>
+        </div>
+        <div th:if="${task.parentTask == null}">
+            <div th:if="${task.childrenTasks.size() > 0}">
             <label for="subtasks">Subtasks:</label>
             <ul id="subtasks">
                 <li th:each="subtask : ${task.childrenTasks}">
@@ -24,6 +37,8 @@
                     <div th:text="${subtask.getActiveTime()}"></div>
                 </li>
             </ul>
+            </div>
+            <a th:href="|@{/profile/tasks/save?parent=}${task.getId()}|">Create subtask</a>
         </div>
         <a th:href="@{/profile}">Back</a>
     </div>

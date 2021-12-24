@@ -2,8 +2,10 @@ package com.netcracker.application.controllers;
 
 import com.netcracker.application.controllers.forms.UserRegistrationForm;
 import com.netcracker.application.controllers.validators.UserRegistrationFormValidator;
+import com.netcracker.application.model.User;
 import com.netcracker.application.services.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -24,11 +26,17 @@ public class AuthController {
 
     private final UserServiceImpl userService;
     private final UserRegistrationFormValidator userRegistrationValidator;
+    private ConversionService conversionService;
 
     @Autowired
     public AuthController(UserRegistrationFormValidator userRegistrationValidator, UserServiceImpl userService) {
         this.userRegistrationValidator = userRegistrationValidator;
         this.userService = userService;
+    }
+
+    @Autowired
+    public void setConversionService(ConversionService conversionService) {
+        this.conversionService = conversionService;
     }
 
     @InitBinder
@@ -67,7 +75,7 @@ public class AuthController {
             return "auth/registration";
         }
 
-        userService.createUser(userRegistrationForm);
+        userService.createUser(conversionService.convert(userRegistrationForm, User.class));
         return "redirect:/";
     }
 }
