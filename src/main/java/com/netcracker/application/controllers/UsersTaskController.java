@@ -1,5 +1,6 @@
 package com.netcracker.application.controllers;
 
+import com.netcracker.application.controllers.forms.UserRegistrationForm;
 import com.netcracker.application.controllers.forms.UsersTaskForm;
 import com.netcracker.application.controllers.validators.UsersTaskFormValidator;
 import com.netcracker.application.model.Task;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -47,10 +49,13 @@ public class UsersTaskController {
         this.usersTaskFormValidator = usersTaskFormValidator;
     }
 
-//    @InitBinder
-//    protected void initBinder(WebDataBinder binder) {
-//        binder.addValidators(usersTaskFormValidator);
-//    }
+    @InitBinder
+    protected void initBinder(WebDataBinder binder) {
+        Optional<Object> userTaskTarget = Optional.ofNullable(binder.getTarget())
+                .filter(field -> field.getClass().equals(UserRegistrationForm.class));
+        if (userTaskTarget.isPresent())
+            binder.setValidator(usersTaskFormValidator);
+    }
 
     @GetMapping("/tasks/{id}")
     public String getUsersTask(@PathVariable Long id, Model model) {
@@ -80,7 +85,7 @@ public class UsersTaskController {
             UsersTask task = usersTaskService.getUsersTaskById(id);
             form = conversionService.convert(task, UsersTaskForm.class);
         }
-        
+
         model.addAttribute("tasks", tasks);
         model.addAttribute("form", form);
         return "task/saveUsersTask";

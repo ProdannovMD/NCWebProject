@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -41,7 +42,10 @@ public class AuthController {
 
     @InitBinder
     protected void initBinder(WebDataBinder binder) {
-        binder.addValidators(userRegistrationValidator);
+        Optional<Object> userRegistrationTarget = Optional.ofNullable(binder.getTarget())
+                .filter(field -> field.getClass().equals(UserRegistrationForm.class));
+        if (userRegistrationTarget.isPresent())
+            binder.setValidator(userRegistrationValidator);
     }
 
     @GetMapping("/registration")
