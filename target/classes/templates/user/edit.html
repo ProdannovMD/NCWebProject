@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:include="layout :: page" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Editing</title>
+</head>
+<body>
+<div th:fragment="content">
+    <main class="form-signin" style="margin-top: 20%; margin-left: 25%; margin-right: 25%">
+        <form th:action="@{/profile/edit}" th:method="POST" th:object="${form}">
+            <h1 class="h3 mb-3 fw-normal">User edit</h1>
+
+            <div class="form-floating">
+                <input type="text" class="form-control" id="name" placeholder="User Name" th:field="*{name}">
+                <label for="name">New User Name</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" class="form-control" id="newPassword" placeholder="Password" th:field="*{password}">
+                <label for="newPassword">New Password</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" class="form-control" id="confirmNewPassword" placeholder="Confirm Password" th:field="*{confirmPassword}">
+                <label for="confirmNewPassword">Confirm New Password</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" class="form-control" id="password" placeholder="Current Password" th:field="*{oldPassword}">
+                <label for="password">Current Password</label>
+            </div>
+
+            <ul th:each="error: ${errors}">
+                <li class="text-danger text-start" th:text="${error}"></li>
+            </ul>
+            <input class="w-100 btn btn-lg btn-primary" type="submit" value="Save">
+        </form>
+    </main>
+</div>
+</body>
+</html>

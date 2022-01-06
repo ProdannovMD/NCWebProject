@@ -12,6 +12,7 @@
     <div style="margin-top: 5%" class="container-fluid bg-body">
         <div class="container">
             <p class="h1" th:text="${user.username}"></p>
+            <a th:href="@{/profile/edit}"> Edit</a>
         </div>
         <ul class="list-group">
             <li class="list-group-item list-group-item-primary list-group-item-action" th:each="task : ${tasks}" th:if="${task.parentTask} == null">

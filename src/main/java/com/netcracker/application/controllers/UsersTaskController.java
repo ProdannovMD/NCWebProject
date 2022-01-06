@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/profile")
+@RequestMapping("/profile/tasks")
 public class UsersTaskController {
 
     private final UserService userService;
@@ -57,7 +57,7 @@ public class UsersTaskController {
             binder.setValidator(usersTaskFormValidator);
     }
 
-    @GetMapping("/tasks/{id}")
+    @GetMapping("/{id}")
     public String getUsersTask(@PathVariable Long id, Model model) {
         User currentUser = userService.getCurrentUser();
         UsersTask usersTask = usersTaskService.getUsersTaskById(id);
@@ -69,7 +69,7 @@ public class UsersTaskController {
         return "task/usersTask";
     }
 
-    @GetMapping("/tasks/save")
+    @GetMapping("/save")
     public String saveUsersTaskForm(Model model, Long parent, Long id) {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> tasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
@@ -91,7 +91,7 @@ public class UsersTaskController {
         return "task/saveUsersTask";
     }
 
-    @PostMapping("/tasks/save")
+    @PostMapping("/save")
     public String saveUsersTask(
             @Valid @ModelAttribute("form") UsersTaskForm form,
             BindingResult bindingResult, Model model) {
@@ -106,7 +106,7 @@ public class UsersTaskController {
         return "redirect:/profile";
     }
 
-    @PostMapping("/tasks/delete")
+    @PostMapping("/delete")
     public String deleteUsersTask(@RequestParam("task") Long id) {
         User currentUser = userService.getCurrentUser();
         UsersTask task = usersTaskService.getUsersTaskById(id);
@@ -118,21 +118,7 @@ public class UsersTaskController {
         return "redirect:/profile";
     }
 
-    @GetMapping
-    public String profile(Model model) {
-        User currentUser = userService.getCurrentUser();
-        List<UsersTask> userTasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
-        UsersTask activeTask = userTasks.stream()
-                .filter(UsersTask::isActive)
-                .findFirst().orElseThrow(IllegalStateException::new);
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("tasks", userTasks);
-        model.addAttribute("activeTask", activeTask);
-        return "user/profile";
-    }
-
-    @GetMapping("/tasks/active")
+    @GetMapping("/active")
     public String getActiveTask() {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> userTasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
@@ -145,12 +131,12 @@ public class UsersTaskController {
         return String.format("redirect:/profile/tasks/%d", activeTask.getId());
     }
 
-    @GetMapping("/tasks")
+    @GetMapping
     public String tasks() {
         return "redirect:/profile";
     }
 
-    @PostMapping("/tasks/active")
+    @PostMapping("/active")
     public String setActiveTask(@RequestParam("task") Long taskId) {
         User currentUser = userService.getCurrentUser();
         UsersTask task = usersTaskService.getUsersTaskById(taskId);
