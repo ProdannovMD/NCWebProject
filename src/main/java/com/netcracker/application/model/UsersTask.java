@@ -5,10 +5,8 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
+import java.time.chrono.ChronoLocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -94,22 +92,53 @@ public class UsersTask {
         return usages.stream().anyMatch(usage -> Objects.isNull(usage.getEndTime()));
     }
 
-    private Long getActiveTimeRaw() {
+    public Long getActiveTimeForDateRaw(LocalDate start, LocalDate end) {
         if (usages.size() == 0)
             return 0L;
 
-        long seconds = 0;
+        long seconds = 0L;
         for (ActiveTask usage : usages) {
             Instant startTime = usage.getStartTime();
             Instant endTime = usage.getEndTime();
             if (Objects.isNull(endTime))
                 endTime = Instant.now();
-            LocalDateTime startDate = LocalDateTime.ofInstant(startTime, ZoneId.systemDefault());
-            LocalDateTime endDate = LocalDateTime.ofInstant(endTime, ZoneId.systemDefault());
-            Duration duration = Duration.between(startDate, endDate);
-            seconds += duration.getSeconds();
+
+            if (
+                    start.atStartOfDay(ZoneId.systemDefault()).toInstant().isAfter(endTime)
+                    || end.atStartOfDay(ZoneId.systemDefault()).toInstant().isBefore(startTime)
+            ) {
+                continue;
+            }
+
+            LocalDateTime startDateTime = start.atStartOfDay(ZoneId.systemDefault()).toInstant().isAfter(startTime) ?
+                    start.atStartOfDay() :
+                    LocalDateTime.ofInstant(startTime, ZoneId.systemDefault());
+            LocalDateTime endDateTime = end.atStartOfDay(ZoneId.systemDefault()).toInstant().isBefore(endTime) ?
+                    end.atStartOfDay() :
+                    LocalDateTime.ofInstant(endTime, ZoneId.systemDefault());
+
+            seconds += Duration.between(startDateTime, endDateTime).getSeconds();
         }
         return seconds;
+    }
+
+    public Long getActiveTimeRaw() {
+//        if (usages.size() == 0)
+//            return 0L;
+//
+//        long seconds = 0;
+//        for (ActiveTask usage : usages) {
+//            Instant startTime = usage.getStartTime();
+//            Instant endTime = usage.getEndTime();
+//            if (Objects.isNull(endTime))
+//                endTime = Instant.now();
+//            LocalDateTime startDate = LocalDateTime.ofInstant(startTime, ZoneId.systemDefault());
+//            LocalDateTime endDate = LocalDateTime.ofInstant(endTime, ZoneId.systemDefault());
+//            Duration duration = Duration.between(startDate, endDate);
+//            seconds += duration.getSeconds();
+//        }
+//        return seconds;
+        return getActiveTimeForDateRaw(LocalDate.MIN, LocalDate.MAX);
     }
 
     public String getActiveTime() {

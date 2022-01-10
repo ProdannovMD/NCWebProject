@@ -1,21 +1,27 @@
 package com.netcracker.application.services.impl;
 
 import com.netcracker.application.controllers.exceptions.ResourceNotFoundException;
-import com.netcracker.application.model.ActiveTask;
-import com.netcracker.application.model.Task;
-import com.netcracker.application.model.User;
-import com.netcracker.application.model.UsersTask;
+import com.netcracker.application.model.*;
 import com.netcracker.application.repository.ActiveTaskRepository;
 import com.netcracker.application.repository.TaskRepository;
 import com.netcracker.application.repository.UsersTaskRepository;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @Component
 public class UsersTaskServiceImpl implements UsersTaskService {
@@ -116,5 +122,78 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         activeTaskRepository.deleteAllByTaskId(usersTask.getId());
         usersTaskRepository.delete(usersTask);
         taskRepository.deleteById(usersTask.getId());
+    }
+
+    @Override
+    public List<Statistic> getStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end) {
+        if (end.isBefore(start))
+            throw new IllegalStateException("Start date should be before the end date");
+
+        List<UsersTask> tasks = new ArrayList<>();
+        List<Long> statisticsTimeRaw = new ArrayList<>();
+        Long totalTimeRaw = 0L;
+        List<Statistic> statistics = new ArrayList<>();
+        tasks.add(usersTask);
+        tasks.addAll(usersTask.getChildrenTasks());
+        LocalDate minDate = tasks.stream()
+                .flatMap(task -> task.getUsages().stream())
+                .map(usage -> LocalDateTime.ofInstant(usage.getStartTime(), ZoneId.systemDefault()).toLocalDate())
+                .min((d1, d2) -> {
+                    if (d1.isBefore(d2))
+                        return -1;
+                    if (d2.isBefore(d1))
+                        return 1;
+                    return 0;
+                }).orElse(start);
+        LocalDate maxDate = tasks.stream()
+                .flatMap(task -> task.getUsages().stream())
+                .map(usage -> LocalDateTime.ofInstant(
+                                        Objects.isNull(usage.getEndTime()) ? Instant.now() : usage.getEndTime(),
+                                        ZoneId.systemDefault()
+                                )
+                                .toLocalDate()
+                )
+                .max((d1, d2) -> {
+                    if (d1.isBefore(d2))
+                        return -1;
+                    if (d2.isBefore(d1))
+                        return 1;
+                    return 0;
+                }).orElse(end);
+
+        start = minDate.isAfter(start) ? minDate : start;
+        end = maxDate.isBefore(end) ? maxDate : end;
+
+        LocalDate current = LocalDate.from(start);
+        while (current.isBefore(end) || current.isEqual(end)) {
+            for (UsersTask task : tasks) {
+                Long statisticTime = task.getActiveTimeForDateRaw(current, current.plusDays(1));
+                totalTimeRaw += statisticTime;
+                long hours = TimeUnit.HOURS.convert(statisticTime, TimeUnit.SECONDS);
+                long minutes = Math.floorMod(TimeUnit.MINUTES.convert(statisticTime, TimeUnit.SECONDS), 60);
+
+                String statisticTimeString = String.format("%sh %sm", hours, minutes);
+                Statistic statistic = Statistic.builder()
+                        .taskName(task.getTask().getName())
+                        .date(current.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .activeTime(statisticTimeString)
+                        .build();
+
+                statistics.add(
+                        statistic
+                );
+                statisticsTimeRaw.add(statisticTime);
+
+            }
+
+            current = current.plusDays(1);
+        }
+
+        for (int i = 0; i < statistics.size(); i++) {
+            Double activePercent = statisticsTimeRaw.get(i) * 1. / totalTimeRaw;
+            statistics.get(i).setActivePercent(activePercent * 100);
+        }
+
+        return statistics;
     }
 }

@@ -22,6 +22,7 @@
                 <input th:value="${task.id}" name="task" hidden>
                 <input type="submit" value="Set active">
             </form>
+            <a th:href="|@{/profile/tasks/statistics/}${task.id}|">Statistics</a>
 
         </div>
         <div th:unless="${task.parentTask == null}">

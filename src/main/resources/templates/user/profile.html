@@ -35,7 +35,7 @@
                     <ul class="list-group">
                         <li class="list-group-item list-group-item-action" th:each="subtask : ${task.getChildrenTasks()}">
                             <div>
-                                <a th:href="|@{/profile/tasks/}${subtask.getId()}|" th:text="${subtask.task.name}"></a>
+                                <a class="navbar-brand" th:href="|@{/profile/tasks/}${subtask.getId()}|" th:text="${subtask.task.name}"></a>
                                 <div th:text="${subtask.getActiveTime()}"></div>
                                 <div th:if="${subtask.isActive()}">Active</div>
                                 <a th:if="${subtask.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${subtask.id}|">Edit</a>
