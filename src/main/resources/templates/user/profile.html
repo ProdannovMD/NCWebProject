@@ -14,47 +14,74 @@
             <p class="h1" th:text="${user.username}"></p>
             <a th:href="@{/profile/edit}"> Edit</a>
         </div>
-        <ul class="list-group">
-            <li class="list-group-item list-group-item-primary list-group-item-action" th:each="task : ${tasks}" th:if="${task.parentTask} == null">
-                <div class="container-fluid d-inline-block">
-                    <a class="navbar-brand" th:href="|@{/profile/tasks/}${task.getId()}|" th:text="${task.task.name}"></a>
-                    <div th:text="${task.getActiveTime()}"></div>
+        <table class="table table-hover">
+<!--            <thead>-->
+<!--            <tr>-->
+<!--                <th scope="col">1</th>-->
+<!--                <th scope="col">2</th>-->
+<!--                <th scope="col">3</th>-->
+<!--                <th scope="col">4</th>-->
+<!--                <th scope="col">5</th>-->
+<!--                <th scope="col">6</th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+            <tbody th:each="task : ${tasks}">
+            <tr class="table-primary"
+                th:if="${task.parentTask} == null">
+                <th scope="row">Task: </th>
+                <td><a class="navbar-brand" th:href="|@{/profile/tasks/}${task.getId()}|"
+                       th:text="${task.task.name}"></a></td>
+                <td>
                     <div th:if="${task.isActive()}">Active</div>
-                    <a th:if="${task.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${task.id}|">Edit</a>
+                </td>
+                <td>
+                    <div th:text="${task.getActiveTime()}"></div>
+                </td>
+                <td><a th:if="${task.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${task.id}|">Edit</a></td>
+                <td>
                     <form th:if="${task.task.modifiable}" th:method="POST" th:action="@{/profile/tasks/delete}">
                         <input th:value="${task.id}" name="task" hidden>
                         <input type="submit" value="Delete">
                     </form>
+                </td>
+                <td>
                     <form th:unless="${task.isActive()}" th:method="POST" th:action="@{/profile/tasks/active}">
                         <input th:value="${task.id}" name="task" hidden>
                         <input type="submit" value="Set active">
                     </form>
-                    <a th:href="|@{/profile/tasks/save?parent=}${task.getId()}|">Create subtask</a>
-                </div>
-                <div>
-                    <ul class="list-group">
-                        <li class="list-group-item list-group-item-action" th:each="subtask : ${task.getChildrenTasks()}">
-                            <div>
-                                <a class="navbar-brand" th:href="|@{/profile/tasks/}${subtask.getId()}|" th:text="${subtask.task.name}"></a>
-                                <div th:text="${subtask.getActiveTime()}"></div>
-                                <div th:if="${subtask.isActive()}">Active</div>
-                                <a th:if="${subtask.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${subtask.id}|">Edit</a>
-                                <form th:if="${subtask.task.modifiable}" th:method="POST" th:action="@{/profile/tasks/delete}">
-                                    <input th:value="${subtask.id}" name="task" hidden>
-                                    <input type="submit" value="Delete">
-                                </form>
-                                <form th:unless="${subtask.isActive()}" th:method="POST"
-                                      th:action="@{/profile/tasks/active}">
-                                    <input th:value="${subtask.id}" name="task" hidden>
-                                    <input type="submit" value="Set active">
-                                </form>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            <a th:href="@{/profile/tasks/save}">Create new task</a>
-        </ul>
+                </td>
+                <td><a th:href="|@{/profile/tasks/save?parent=}${task.getId()}|">Create subtask</a></td>
+            </tr>
+            <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}">
+                <th scope="row">Subtask: </th>
+                <td><a class="navbar-brand" th:href="|@{/profile/tasks/}${subtask.getId()}|"
+                       th:text="${subtask.task.name}"></a></td>
+                <td>
+                    <div th:if="${subtask.isActive()}">Active</div>
+                </td>
+                <td>
+                    <div th:text="${subtask.getActiveTime()}"></div>
+                </td>
+                <td><a th:if="${subtask.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${subtask.id}|">Edit</a>
+                <td>
+                    <form th:if="${subtask.task.modifiable}" th:method="POST" th:action="@{/profile/tasks/delete}">
+                        <input th:value="${subtask.id}" name="task" hidden>
+                        <input type="submit" value="Delete">
+                    </form>
+                </td>
+                <td>
+                    <form th:unless="${subtask.isActive()}" th:method="POST"
+                          th:action="@{/profile/tasks/active}">
+                        <input th:value="${subtask.id}" name="task" hidden>
+                        <input type="submit" value="Set active">
+                    </form>
+                </td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>
+        <a th:href="@{/profile/tasks/save}">Create new task</a>
     </div>
+</div>
 </body>
 </html>
