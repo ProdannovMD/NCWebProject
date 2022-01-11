@@ -23,12 +23,16 @@
                 <label for="name">Task Name</label>
             </div>
             <div class="form-floating">
-                <select class="form-select form-select-lg mb-3" id="parent" th:field="*{parent}">
+                <select class="form-select form-select-lg" id="parent" th:field="*{parent}">
                     <option value="0">None</option>
                     <option th:each="task : ${tasks}" th:if="${task.parentTask == null} and *{id} != ${task.id}"
                             th:text="${task.task.name}" th:value="${task.id}"></option>
                 </select>
                 <label for="parent">Task Parent</label>
+            </div>
+            <div class="input-group form-floating mb-3">
+                <span class="input-group-text">Description</span>
+                <textarea id="description" class="form-control" th:field="*{description}"></textarea>
             </div>
             <ul th:each="error: ${errors}">
                 <li class="text-danger text-start" th:text="${error}"></li>

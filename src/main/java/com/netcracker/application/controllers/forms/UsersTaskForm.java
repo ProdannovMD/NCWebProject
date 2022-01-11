@@ -1,12 +1,23 @@
 package com.netcracker.application.controllers.forms;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 public class UsersTaskForm {
     private Long id;
+    @NotBlank(message = "{task.name.blank}")
     @Size(max = 50, message = "{tasks.name.long}")
     private String name;
     private Long parent;
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public Long getId() {
         return id;

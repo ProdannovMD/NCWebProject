@@ -4,31 +4,51 @@ import com.netcracker.application.controllers.forms.UsersTaskForm;
 import com.netcracker.application.model.Task;
 import com.netcracker.application.model.User;
 import com.netcracker.application.model.UsersTask;
+import com.netcracker.application.services.StatusService;
 import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+
 @Component
 public class UsersTaskConverter implements Converter<UsersTaskForm, UsersTask> {
 
     private final UserService userService;
     private final UsersTaskService usersTaskService;
+    private final StatusService statusService;
 
     @Autowired
-    public UsersTaskConverter(UserService userService, UsersTaskService usersTaskService) {
+    public UsersTaskConverter(UserService userService, UsersTaskService usersTaskService, StatusService statusService) {
         this.userService = userService;
         this.usersTaskService = usersTaskService;
+        this.statusService = statusService;
     }
 
     @Override
     public UsersTask convert(UsersTaskForm source) {
         User currentUser = userService.getCurrentUser();
-        Task newTask = new Task();
+        Task newTask;
+        UsersTask usersTask;
+        if (Objects.isNull(source.getId())) {
+            usersTask = new UsersTask();
+            newTask = new Task();
+        }
+        else {
+            usersTask = usersTaskService.getUsersTaskById(source.getId());
+            newTask = usersTask.getTask();
+        }
         newTask.setName(source.getName());
+        newTask.setCreatedBy(currentUser);
+        newTask.setCreatedTime(Instant.now());
+        newTask.setModifiedTime(Instant.now());
+        newTask.setStatus(statusService.getDefaultStatus());
+        newTask.setDescription(source.getDescription());
 
-        UsersTask usersTask = new UsersTask();
         usersTask.setId(source.getId());
         usersTask.setTask(newTask);
         usersTask.setUser(currentUser);

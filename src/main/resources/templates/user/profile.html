@@ -15,27 +15,22 @@
             <a th:href="@{/profile/edit}"> Edit</a>
         </div>
         <table class="table table-hover">
-<!--            <thead>-->
-<!--            <tr>-->
-<!--                <th scope="col">1</th>-->
-<!--                <th scope="col">2</th>-->
-<!--                <th scope="col">3</th>-->
-<!--                <th scope="col">4</th>-->
-<!--                <th scope="col">5</th>-->
-<!--                <th scope="col">6</th>-->
-<!--            </tr>-->
-<!--            </thead>-->
             <tbody th:each="task : ${tasks}">
             <tr class="table-primary"
                 th:if="${task.parentTask} == null">
-                <th scope="row">Task: </th>
+                <th scope="row">Task:</th>
                 <td><a class="navbar-brand" th:href="|@{/profile/tasks/}${task.getId()}|"
                        th:text="${task.task.name}"></a></td>
                 <td>
-                    <div th:if="${task.isActive()}">Active</div>
+                    <p th:text="'Status: '+${task.task.status.status}"></p>
+                    <div th:if="${task.isActive()}">(Active)</div>
                 </td>
                 <td>
                     <div th:text="${task.getActiveTime()}"></div>
+                </td>
+                <td>
+                    <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
+                       th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
                 </td>
                 <td><a th:if="${task.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${task.id}|">Edit</a></td>
                 <td>
@@ -53,14 +48,19 @@
                 <td><a th:href="|@{/profile/tasks/save?parent=}${task.getId()}|">Create subtask</a></td>
             </tr>
             <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}">
-                <th scope="row">Subtask: </th>
+                <th scope="row">Subtask:</th>
                 <td><a class="navbar-brand" th:href="|@{/profile/tasks/}${subtask.getId()}|"
                        th:text="${subtask.task.name}"></a></td>
                 <td>
-                    <div th:if="${subtask.isActive()}">Active</div>
+                    <p th:text="'Status: '+${subtask.task.status.status}"></p>
+                    <div th:if="${subtask.isActive()}">(Active)</div>
                 </td>
                 <td>
                     <div th:text="${subtask.getActiveTime()}"></div>
+                </td>
+                <td>
+                    <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
+                       th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
                 </td>
                 <td><a th:if="${subtask.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${subtask.id}|">Edit</a>
                 <td>

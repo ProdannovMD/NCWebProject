@@ -12,7 +12,24 @@
     <div style="margin-top: 20%">
         <div>
             <div th:utext="(${task.parentTask} == null ? 'Task: ' : 'Subtask: ')+${task.task.name}+(${task.isActive()} ? ' (Active)' : '')"></div>
+            <label for="description">Description:</label>
+            <textarea id="description" type="text" cols="40" rows="10" disabled
+                      th:text="${task.task.description}"></textarea>
             <div th:text="|Total time: ${task.getActiveTime()}|"></div>
+            <form th:method="POST" th:action="@{/profile/tasks/change_status}" th:object="${form}">
+                <input th:value="${task.task.id}" th:field="*{task}" hidden>
+                <label for="status">Status</label>
+                <select id="status" th:field="*{status}">
+                    <option th:each="status : ${statuses}"
+                            th:text="${status.status}" th:value="${status.id}"></option>
+                </select>
+                <input type="submit" value="Set">
+            </form>
+            <div th:if="${task.task.id != 1}">
+                <p th:text="'Created by: '+${task.task.createdBy.username}"></p>
+                <p th:text="'Created: '+${task.task.createdTime}"></p>
+                <p th:text="'Last modified: '+${task.task.modifiedTime}"></p>
+            </div>
             <a th:if="${task.task.modifiable}" th:href="|@{/profile/tasks/save?id=}${task.id}|">Edit</a>
             <form th:if="${task.task.modifiable}" th:method="POST" th:action="@{/profile/tasks/delete}">
                 <input th:value="${task.id}" name="task" hidden>
@@ -31,13 +48,13 @@
         </div>
         <div th:if="${task.parentTask == null}">
             <div th:if="${task.childrenTasks.size() > 0}">
-            <label for="subtasks">Subtasks:</label>
-            <ul id="subtasks">
-                <li th:each="subtask : ${task.childrenTasks}">
-                    <a th:href="|@{/profile/tasks/}${subtask.getId()}|" th:text="${subtask.task.name}"></a>
-                    <div th:text="${subtask.getActiveTime()}"></div>
-                </li>
-            </ul>
+                <label for="subtasks">Subtasks:</label>
+                <ul id="subtasks">
+                    <li th:each="subtask : ${task.childrenTasks}">
+                        <a th:href="|@{/profile/tasks/}${subtask.getId()}|" th:text="${subtask.task.name}"></a>
+                        <div th:text="${subtask.getActiveTime()}"></div>
+                    </li>
+                </ul>
             </div>
             <a th:href="|@{/profile/tasks/save?parent=}${task.getId()}|">Create subtask</a>
         </div>

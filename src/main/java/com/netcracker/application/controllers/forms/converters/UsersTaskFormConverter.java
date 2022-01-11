@@ -35,6 +35,7 @@ public class UsersTaskFormConverter implements Converter<UsersTask, UsersTaskFor
         if (Objects.nonNull(source.getParentTask()))
             form.setParent(source.getParentTask().getId());
         form.setName(source.getTask().getName());
+        form.setDescription(source.getTask().getDescription());
 
         return form;
     }

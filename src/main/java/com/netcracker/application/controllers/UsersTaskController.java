@@ -1,11 +1,13 @@
 package com.netcracker.application.controllers;
 
+import com.netcracker.application.controllers.forms.StatusForm;
 import com.netcracker.application.controllers.forms.UserRegistrationForm;
 import com.netcracker.application.controllers.forms.UsersTaskForm;
 import com.netcracker.application.controllers.validators.UsersTaskFormValidator;
 import com.netcracker.application.model.Task;
 import com.netcracker.application.model.User;
 import com.netcracker.application.model.UsersTask;
+import com.netcracker.application.services.StatusService;
 import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +32,15 @@ public class UsersTaskController {
 
     private final UserService userService;
     private final UsersTaskService usersTaskService;
+    private final StatusService statusService;
     private UsersTaskFormValidator usersTaskFormValidator;
     private ConversionService conversionService;
 
     @Autowired
-    public UsersTaskController(UserService userService, UsersTaskService usersTaskService) {
+    public UsersTaskController(UserService userService, UsersTaskService usersTaskService, StatusService statusService) {
         this.userService = userService;
         this.usersTaskService = usersTaskService;
+        this.statusService = statusService;
     }
 
     @Autowired
@@ -64,8 +68,14 @@ public class UsersTaskController {
         if (!currentUser.getId().equals(usersTask.getUser().getId()))
             throw new AccessDeniedException("");
 
+        StatusForm form = new StatusForm();
+        form.setTask(usersTask.getId());
+        form.setStatus(usersTask.getTask().getStatus().getId());
+
         model.addAttribute("user", currentUser);
         model.addAttribute("task", usersTask);
+        model.addAttribute("statuses", statusService.getAllStatuses());
+        model.addAttribute("form", form);
         return "task/usersTask";
     }
 
@@ -80,8 +90,7 @@ public class UsersTaskController {
         if (Objects.isNull(id)) {
             if (Objects.nonNull(parent))
                 form.setParent(parent);
-        }
-        else {
+        } else {
             UsersTask task = usersTaskService.getUsersTaskById(id);
             form = conversionService.convert(task, UsersTaskForm.class);
         }
@@ -142,5 +151,16 @@ public class UsersTaskController {
         UsersTask task = usersTaskService.getUsersTaskById(taskId);
         usersTaskService.setUsersTaskActiveByUserId(currentUser.getId(), task);
         return "redirect:/profile";
+    }
+
+    @PostMapping("/change_status")
+    public String changeStatus(@Valid @ModelAttribute("form") StatusForm form, BindingResult bindingResult) {
+        if (bindingResult.hasErrors())
+            return "redirect:/profile";
+
+        UsersTask usersTask = conversionService.convert(form, UsersTask.class);
+        usersTaskService.saveUsersTask(usersTask);
+
+        return String.format("redirect:/profile/tasks/%d", usersTask.getId());
     }
 }

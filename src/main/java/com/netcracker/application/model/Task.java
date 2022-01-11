@@ -1,6 +1,9 @@
 package com.netcracker.application.model;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import javax.persistence.*;
+import java.time.Instant;
 
 @Entity
 @Table(name = "tasks")
@@ -15,6 +18,66 @@ public class Task {
 
     @Column(name = "modifiable")
     private Boolean modifiable = true;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    @ManyToOne
+    @JoinColumn(name = "status")
+    @ColumnDefault("1")
+    private Status status;
+
+    @Column(name = "created_time")
+    @ColumnDefault("NOW()")
+    private Instant createdTime;
+
+    @Column(name = "modified_time")
+    @ColumnDefault("NOW()")
+    private Instant modifiedTime;
+
+    @Column(name = "description")
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Instant getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(Instant modifiedTime) {
+        this.modifiedTime = modifiedTime;
+    }
+
+    public Instant getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Instant createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public Boolean getModifiable() {
         return modifiable;
