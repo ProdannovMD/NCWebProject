@@ -1,5 +1,6 @@
 package com.netcracker.application.services.impl;
 
+import com.netcracker.application.controllers.exceptions.ResourceNotFoundException;
 import com.netcracker.application.model.User;
 import com.netcracker.application.repository.UserRepository;
 import com.netcracker.application.services.UserService;
@@ -40,6 +41,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logoutUser() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Override
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override

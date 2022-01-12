@@ -33,6 +33,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" th:href="@{/profile/tasks/active}">Active task</a>
                     </li>
+                    <li sec:authorize="hasRole('ROLE_ADMIN')" class="nav-item">
+                        <a class="nav-link active" th:href="@{/admin}">Administration</a>
+                    </li>
                 </ul>
             </div>
             <ul sec:authorize="!isAuthenticated()" class="navbar-nav right">

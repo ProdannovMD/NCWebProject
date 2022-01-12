@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:include="layout :: page" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Task</title>
+
+
+</head>
+<body>
+<div th:fragment="content">
+    <main class="form-signin" style="margin-top: 20%; margin-left: 25%; margin-right: 25%">
+        <form th:method="POST" th:action="|@{/admin/users/}${user.id}@{/assign}|" th:object="${form}">
+                <h1 class="h3 mb-3 fw-normal" th:text="'Assign task for user: '+${user.username}"></h1>
+            <input id="id" name="user" th:field="*{user}" hidden>
+            <div class="form-floating mb-3">
+                <select class="form-select form-select-lg" id="task" th:field="*{task}">
+                    <option th:each="task : ${tasks}" th:if="${task.parentTask == null}"
+                            th:text="${task.task.name}" th:value="${task.task.id}"></option>
+                </select>
+                <label for="task">Task</label>
+            </div>
+<!--            <ul th:each="error: ${errors}">-->
+<!--                <li class="text-danger text-start" th:text="${error}"></li>-->
+<!--            </ul>-->
+            <input class="w-100 btn btn-lg btn-primary" type="submit" value="Assign">
+        </form>
+    </main>
+</div>
+</body>
+</html>

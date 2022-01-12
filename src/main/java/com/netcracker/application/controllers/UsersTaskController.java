@@ -119,7 +119,10 @@ public class UsersTaskController {
     public String deleteUsersTask(@RequestParam("task") Long id) {
         User currentUser = userService.getCurrentUser();
         UsersTask task = usersTaskService.getUsersTaskById(id);
-        if (!task.getUser().getId().equals(currentUser.getId()))
+        if (
+                !task.getUser().getId().equals(currentUser.getId()) &&
+                        !task.getTask().getCreatedBy().getId().equals(currentUser.getId())
+        )
             throw new AccessDeniedException("Invalid access to a task");
 
         usersTaskService.deleteUsersTaskById(id);
@@ -132,9 +135,7 @@ public class UsersTaskController {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> userTasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
         UsersTask activeTask = userTasks.stream()
-                .filter(task ->
-                        task.getUsages().stream().anyMatch(usage -> Objects.isNull(usage.getEndTime()))
-                )
+                .filter(UsersTask::isActive)
                 .findFirst().orElseThrow(IllegalStateException::new);
 
         return String.format("redirect:/profile/tasks/%d", activeTask.getId());

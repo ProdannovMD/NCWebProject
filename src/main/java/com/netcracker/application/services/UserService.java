@@ -15,4 +15,6 @@ public interface UserService extends UserDetailsService {
     void updateUser(User user);
 
     void logoutUser();
+
+    User getUserById(Long id);
 }

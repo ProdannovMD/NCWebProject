@@ -34,6 +34,7 @@ public class ExceptionHandlerController {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String internalServerError(RuntimeException ex, Model model) {
+        ex.printStackTrace();
         if (Objects.nonNull(ex.getMessage()))
             model.addAttribute("message", ex.getMessage());
 

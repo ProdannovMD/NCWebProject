@@ -58,13 +58,13 @@ public class UserController {
     public String profile(Model model) {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> userTasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
-        UsersTask activeTask = userTasks.stream()
-                .filter(UsersTask::isActive)
-                .findFirst().orElseThrow(IllegalStateException::new);
+//        UsersTask activeTask = userTasks.stream()
+//                .filter(UsersTask::isActive)
+//                .findFirst().orElseThrow(IllegalStateException::new);
 
         model.addAttribute("user", currentUser);
         model.addAttribute("tasks", userTasks);
-        model.addAttribute("activeTask", activeTask);
+//        model.addAttribute("activeTask", activeTask);
         return "user/profile";
     }
 
