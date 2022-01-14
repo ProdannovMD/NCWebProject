@@ -6,6 +6,7 @@ import com.netcracker.application.model.User;
 import com.netcracker.application.model.UsersTask;
 import com.netcracker.application.services.TaskService;
 import com.netcracker.application.services.UserService;
+import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -14,11 +15,13 @@ import org.springframework.stereotype.Component;
 public class UserTaskAssignConverter implements Converter<AssignTaskForm, UsersTask> {
     private final UserService userService;
     private final TaskService taskService;
+    private final UsersTaskService usersTaskService;
 
     @Autowired
-    public UserTaskAssignConverter(UserService userService, TaskService taskService) {
+    public UserTaskAssignConverter(UserService userService, TaskService taskService, UsersTaskService usersTaskService) {
         this.userService = userService;
         this.taskService = taskService;
+        this.usersTaskService = usersTaskService;
     }
 
     @Override
@@ -28,6 +31,10 @@ public class UserTaskAssignConverter implements Converter<AssignTaskForm, UsersT
         UsersTask usersTask = new UsersTask();
         usersTask.setUser(user);
         usersTask.setTask(task);
+        if (source.getParent() > 0) {
+            UsersTask parentTask = usersTaskService.getUsersTaskById(source.getParent());
+            usersTask.setParentTask(parentTask);
+        }
 
         return usersTask;
     }

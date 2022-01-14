@@ -1,8 +1,12 @@
 package com.netcracker.application.controllers;
 
 import com.netcracker.application.controllers.forms.AssignTaskForm;
+import com.netcracker.application.controllers.forms.StatusForm;
+import com.netcracker.application.model.Status;
+import com.netcracker.application.model.TaskComment;
 import com.netcracker.application.model.User;
 import com.netcracker.application.model.UsersTask;
+import com.netcracker.application.services.StatusService;
 import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +25,14 @@ import java.util.stream.Collectors;
 public class AdminController {
     private final UserService userService;
     private final UsersTaskService usersTaskService;
+    private final StatusService statusService;
     private ConversionService conversionService;
 
     @Autowired
-    public AdminController(UserService userService, UsersTaskService usersTaskService) {
+    public AdminController(UserService userService, UsersTaskService usersTaskService, StatusService statusService) {
         this.userService = userService;
         this.usersTaskService = usersTaskService;
+        this.statusService = statusService;
     }
 
     @Autowired
@@ -55,20 +61,16 @@ public class AdminController {
         User currentUser = userService.getCurrentUser();
         User user = userService.getUserById(id);
         List<UsersTask> userTasks = usersTaskService.getUsersTasksByUserId(user.getId());
-//        UsersTask activeTask = userTasks.stream()
-//                .filter(UsersTask::isActive)
-//                .findFirst().orElseThrow(IllegalStateException::new);
 
         model.addAttribute("user", user);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("tasks", userTasks);
-//        model.addAttribute("activeTask", activeTask);
 
         return "user/profile";
     }
 
     @GetMapping("/users/{id}/assign")
-    public String assignTaskForm(@PathVariable Long id, Model model) {
+    public String assignTaskForm(@PathVariable Long id, Long parent, Model model) {
         User user = userService.getUserById(id);
         User currentUser = userService.getCurrentUser();
         List<UsersTask> usersTasks = usersTaskService.getUsersTasksByUserId(user.getId());
@@ -76,7 +78,7 @@ public class AdminController {
         currentUsersTasks = currentUsersTasks.stream()
                 .filter(
                         task -> task.getTask().getCreatedBy().getId().equals(currentUser.getId()) &&
-                                usersTasks.stream().noneMatch(ut -> ut.getTask().getId().equals(task.getId()))
+                                usersTasks.stream().noneMatch(ut -> ut.getTask().getId().equals(task.getTask().getId()))
                 )
                 .collect(Collectors.toList());
 
@@ -84,6 +86,7 @@ public class AdminController {
         AssignTaskForm form = new AssignTaskForm();
         form.setUser(id);
 
+        model.addAttribute("parents", usersTasks);
         model.addAttribute("tasks", currentUsersTasks);
         model.addAttribute("user", user);
         model.addAttribute("form", form);
@@ -97,5 +100,26 @@ public class AdminController {
         usersTaskService.saveUsersTask(usersTask);
 
         return String.format("redirect:/admin/users/%d", id);
+    }
+
+    @GetMapping("/users/{id}/tasks/{task}")
+    public String getUsersTask(@PathVariable Long id, @PathVariable Long task, Model model) {
+        User user = userService.getUserById(id);
+        User currentUser = userService.getCurrentUser();
+        UsersTask usersTask = usersTaskService.getUsersTaskById(task);
+        List<TaskComment> comments = usersTaskService.getTaskCommentsForUsersTask(usersTask);
+        List<Status> statuses = statusService.getAllStatuses();
+        StatusForm form = new StatusForm();
+        form.setStatus(usersTask.getTask().getStatus().getId());
+        form.setTask(usersTask.getId());
+
+        model.addAttribute("comments", comments);
+        model.addAttribute("user", user);
+        model.addAttribute("task", usersTask);
+        model.addAttribute("statuses", statuses);
+        model.addAttribute("form", form);
+        model.addAttribute("currentUser", currentUser);
+
+        return "task/usersTask";
     }
 }

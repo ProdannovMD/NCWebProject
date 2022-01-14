@@ -1,8 +1,6 @@
 package com.netcracker.application.services;
 
-import com.netcracker.application.model.Statistic;
-import com.netcracker.application.model.User;
-import com.netcracker.application.model.UsersTask;
+import com.netcracker.application.model.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,4 +21,10 @@ public interface UsersTaskService {
     void deleteUsersTaskById(Long id);
 
     List<Statistic> getStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end);
+
+    List<TaskComment> getTaskCommentsForUsersTask(UsersTask usersTask);
+
+    List<TaskComment> getTaskCommentsForTask(Task usersTask);
+
+    void saveTaskComment(TaskComment taskComment);
 }

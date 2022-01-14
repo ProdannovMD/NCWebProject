@@ -1,10 +1,11 @@
 package com.netcracker.application.controllers;
 
 import com.netcracker.application.controllers.forms.StatusForm;
+import com.netcracker.application.controllers.forms.TaskCommentForm;
 import com.netcracker.application.controllers.forms.UserRegistrationForm;
 import com.netcracker.application.controllers.forms.UsersTaskForm;
 import com.netcracker.application.controllers.validators.UsersTaskFormValidator;
-import com.netcracker.application.model.Task;
+import com.netcracker.application.model.TaskComment;
 import com.netcracker.application.model.User;
 import com.netcracker.application.model.UsersTask;
 import com.netcracker.application.services.StatusService;
@@ -27,7 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/profile/tasks")
+@RequestMapping("/tasks")
 public class UsersTaskController {
 
     private final UserService userService;
@@ -65,13 +66,19 @@ public class UsersTaskController {
     public String getUsersTask(@PathVariable Long id, Model model) {
         User currentUser = userService.getCurrentUser();
         UsersTask usersTask = usersTaskService.getUsersTaskById(id);
-        if (!currentUser.getId().equals(usersTask.getUser().getId()))
-            throw new AccessDeniedException("");
+        List<TaskComment> comments = usersTaskService.getTaskCommentsForUsersTask(usersTask);
+        if (!currentUser.getId().equals(usersTask.getUser().getId())) {
+            if (currentUser.hasRole("ROLE_ADMIN"))
+                return String.format("redirect:/admin/users/%d/tasks/%d", usersTask.getUser().getId(), id);
+
+            throw new AccessDeniedException("Invalid access to a task");
+        }
 
         StatusForm form = new StatusForm();
         form.setTask(usersTask.getId());
         form.setStatus(usersTask.getTask().getStatus().getId());
 
+        model.addAttribute("comments", comments);
         model.addAttribute("user", currentUser);
         model.addAttribute("task", usersTask);
         model.addAttribute("statuses", statusService.getAllStatuses());
@@ -138,7 +145,7 @@ public class UsersTaskController {
                 .filter(UsersTask::isActive)
                 .findFirst().orElseThrow(IllegalStateException::new);
 
-        return String.format("redirect:/profile/tasks/%d", activeTask.getId());
+        return String.format("redirect:/tasks/%d", activeTask.getId());
     }
 
     @GetMapping
@@ -162,6 +169,38 @@ public class UsersTaskController {
         UsersTask usersTask = conversionService.convert(form, UsersTask.class);
         usersTaskService.saveUsersTask(usersTask);
 
-        return String.format("redirect:/profile/tasks/%d", usersTask.getId());
+        return String.format("redirect:/tasks/%d", usersTask.getId());
+    }
+
+    @GetMapping("/{id}/comments/save")
+    public String saveCommentForm(@PathVariable Long id, Model model) {
+        User currentUser = userService.getCurrentUser();
+        UsersTask usersTask = usersTaskService.getUsersTaskById(id);
+
+        if (
+                !usersTask.getTask().getModifiable() || (
+                                !currentUser.getId().equals(usersTask.getUser().getId()) &&
+                                        !currentUser.getId().equals(usersTask.getTask().getCreatedBy().getId())
+                        )
+        ) {
+            throw new AccessDeniedException("Illegal access to a task");
+        }
+
+        TaskCommentForm form = new TaskCommentForm();
+        form.setUser(currentUser.getId());
+        form.setTask(usersTask.getTask().getId());
+
+        model.addAttribute("task", usersTask);
+        model.addAttribute("form", form);
+
+        return "comment/saveTaskComment";
+    }
+
+    @PostMapping("/{id}/comments/save")
+    public String saveComment(@Valid @ModelAttribute("form") TaskCommentForm form, @PathVariable Long id) {
+        TaskComment comment = conversionService.convert(form, TaskComment.class);
+        usersTaskService.saveTaskComment(comment);
+
+        return String.format("redirect:/tasks/%d", id);
     }
 }

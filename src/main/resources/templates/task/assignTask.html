@@ -15,8 +15,14 @@
                 <h1 class="h3 mb-3 fw-normal" th:text="'Assign task for user: '+${user.username}"></h1>
             <input id="id" name="user" th:field="*{user}" hidden>
             <div class="form-floating mb-3">
+                <select class="form-select form-select-lg" id="parent" th:field="*{parent}">
+                    <option value="0">None</option>
+                    <option th:each="parent : ${parents}" th:if="${parent.parentTask == null}"
+                            th:text="${parent.task.name}" th:value="${parent.id}"></option>
+                </select>
+                <label for="parent">Parent</label>
                 <select class="form-select form-select-lg" id="task" th:field="*{task}">
-                    <option th:each="task : ${tasks}" th:if="${task.parentTask == null}"
+                    <option th:each="task : ${tasks}"
                             th:text="${task.task.name}" th:value="${task.task.id}"></option>
                 </select>
                 <label for="task">Task</label>

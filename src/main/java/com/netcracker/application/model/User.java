@@ -84,6 +84,10 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
+    public boolean hasRole(String role) {
+        return roles.stream().anyMatch(r -> r.getAuthority().equals(role));
+    }
+
     @Override
     public String toString() {
         return "User{" +

@@ -1,17 +1,9 @@
 package com.netcracker.application.controllers.forms;
 
-public class AssignTaskForm {
+public class TaskCommentForm {
     private Long user;
     private Long task;
-    private Long parent;
-
-    public Long getParent() {
-        return parent;
-    }
-
-    public void setParent(Long parent) {
-        this.parent = parent;
-    }
+    private String comment;
 
     public Long getUser() {
         return user;
@@ -27,5 +19,13 @@ public class AssignTaskForm {
 
     public void setTask(Long task) {
         this.task = task;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

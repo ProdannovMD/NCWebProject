@@ -18,7 +18,7 @@
             <tr class="table-primary"
                 th:if="${task.parentTask} == null">
                 <th scope="row">Task:</th>
-                <td><a class="navbar-brand" th:href="|@{/profile/tasks/}${task.getId()}|"
+                <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
                        th:text="${task.task.name}"></a></td>
                 <td>
                     <p th:text="'Status: '+${task.task.status.status}"></p>
@@ -33,30 +33,30 @@
                 </td>
                 <td>
                     <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
-                       th:href="|@{/profile/tasks/save?id=}${task.id}|">Edit</a></td>
+                       th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
                 <td>
                     <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
-                          th:method="POST" th:action="@{/profile/tasks/delete}">
+                          th:method="POST" th:action="@{/tasks/delete}">
                         <input th:value="${task.id}" name="task" hidden>
                         <input type="submit" value="Delete">
                     </form>
                 </td>
                 <td>
                     <form th:if="${currentUser == null or currentUser.id == user.id}"
-                          th:unless="${task.isActive()}" th:method="POST" th:action="@{/profile/tasks/active}">
+                          th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
                         <input th:value="${task.id}" name="task" hidden>
                         <input type="submit" value="Set active">
                     </form>
                 </td>
                 <td th:if="${currentUser == null or currentUser.id == user.id}">
-                    <a th:href="|@{/profile/tasks/save?parent=}${task.getId()}|">
+                    <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
                         Create subtask
                     </a>
                 </td>
             </tr>
             <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}">
                 <th scope="row">Subtask:</th>
-                <td><a class="navbar-brand" th:href="|@{/profile/tasks/}${subtask.getId()}|"
+                <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
                        th:text="${subtask.task.name}"></a></td>
                 <td>
                     <p th:text="'Status: '+${subtask.task.status.status}"></p>
@@ -71,10 +71,10 @@
                 </td>
                 <td>
                     <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
-                       th:href="|@{/profile/tasks/save?id=}${subtask.id}|">Edit</a>
+                       th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
                 <td>
                     <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
-                          th:method="POST" th:action="@{/profile/tasks/delete}">
+                          th:method="POST" th:action="@{/tasks/delete}">
                         <input th:value="${subtask.id}" name="task" hidden>
                         <input type="submit" value="Delete">
                     </form>
@@ -82,7 +82,7 @@
                 <td>
                     <form th:if="${currentUser == null or currentUser.id == user.id}"
                           th:unless="${subtask.isActive()}" th:method="POST"
-                          th:action="@{/profile/tasks/active}">
+                          th:action="@{/tasks/active}">
                         <input th:value="${subtask.id}" name="task" hidden>
                         <input type="submit" value="Set active">
                     </form>
@@ -91,7 +91,7 @@
             </tr>
             </tbody>
         </table>
-        <a th:if="${currentUser == null or currentUser.id == user.id}" th:href="@{/profile/tasks/save}">Create new task</a>
+        <a th:if="${currentUser == null or currentUser.id == user.id}" th:href="@{/tasks/save}">Create new task</a>
         <a th:if="${currentUser != null}" th:href="|@{/admin/users/}${user.id}@{/assign}|">Assign task</a>
     </div>
 </div>

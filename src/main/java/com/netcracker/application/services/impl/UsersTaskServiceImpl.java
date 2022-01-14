@@ -3,11 +3,11 @@ package com.netcracker.application.services.impl;
 import com.netcracker.application.controllers.exceptions.ResourceNotFoundException;
 import com.netcracker.application.model.*;
 import com.netcracker.application.repository.ActiveTaskRepository;
+import com.netcracker.application.repository.TaskCommentRepository;
 import com.netcracker.application.repository.TaskRepository;
 import com.netcracker.application.repository.UsersTaskRepository;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
@@ -17,11 +17,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 @Component
 public class UsersTaskServiceImpl implements UsersTaskService {
@@ -30,16 +28,19 @@ public class UsersTaskServiceImpl implements UsersTaskService {
     private final UsersTaskRepository usersTaskRepository;
     private final TaskRepository taskRepository;
     private final ActiveTaskRepository activeTaskRepository;
+    private final TaskCommentRepository taskCommentRepository;
 
     @Autowired
     public UsersTaskServiceImpl(
             UsersTaskRepository usersTaskRepository,
             TaskRepository taskRepository,
-            ActiveTaskRepository activeTaskRepository
+            ActiveTaskRepository activeTaskRepository,
+            TaskCommentRepository taskCommentRepository
     ) {
         this.usersTaskRepository = usersTaskRepository;
         this.taskRepository = taskRepository;
         this.activeTaskRepository = activeTaskRepository;
+        this.taskCommentRepository = taskCommentRepository;
     }
 
     @Override
@@ -119,9 +120,7 @@ public class UsersTaskServiceImpl implements UsersTaskService {
 
         usersTask.getChildrenTasks().forEach(ct -> deleteUsersTaskById(ct.getId()));
 
-        activeTaskRepository.deleteAllByTaskId(usersTask.getId());
         usersTaskRepository.delete(usersTask);
-        taskRepository.deleteById(usersTask.getId());
     }
 
     @Override
@@ -135,6 +134,9 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         List<Statistic> statistics = new ArrayList<>();
         tasks.add(usersTask);
         tasks.addAll(usersTask.getChildrenTasks());
+        if (tasks.stream().allMatch(task -> task.getUsages().size() == 0))
+            return statistics;
+
         LocalDate minDate = tasks.stream()
                 .flatMap(task -> task.getUsages().stream())
                 .map(usage -> LocalDateTime.ofInstant(usage.getStartTime(), ZoneId.systemDefault()).toLocalDate())
@@ -190,10 +192,26 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         }
 
         for (int i = 0; i < statistics.size(); i++) {
-            Double activePercent = statisticsTimeRaw.get(i) * 1. / totalTimeRaw;
+            double activePercent = statisticsTimeRaw.get(i) * 1. / totalTimeRaw;
             statistics.get(i).setActivePercent(activePercent * 100);
         }
 
         return statistics;
+    }
+
+    @Override
+    public List<TaskComment> getTaskCommentsForUsersTask(UsersTask usersTask) {
+
+        return taskCommentRepository.getByTask(usersTask.getTask());
+    }
+
+    @Override
+    public List<TaskComment> getTaskCommentsForTask(Task task) {
+        return taskCommentRepository.getByTask(task);
+    }
+
+    @Override
+    public void saveTaskComment(TaskComment taskComment) {
+        taskCommentRepository.save(taskComment);
     }
 }

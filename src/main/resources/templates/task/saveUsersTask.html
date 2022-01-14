@@ -12,7 +12,7 @@
 <body>
 <div th:fragment="content">
     <main class="form-signin" style="margin-top: 20%; margin-left: 25%; margin-right: 25%">
-        <form th:method="POST" th:action="@{/profile/tasks/save}" th:object="${form}">
+        <form th:method="POST" th:action="@{/tasks/save}" th:object="${form}">
             <div th:switch="*{id}">
                 <h1 th:case="null" class="h3 mb-3 fw-normal">Create new task</h1>
                 <h1 th:case="*" class="h3 mb-3 fw-normal">Edit task</h1>

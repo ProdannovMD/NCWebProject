@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Controller
-@RequestMapping("/profile/tasks/statistics")
+@RequestMapping("/tasks/statistics")
 public class StatisticsController {
 
     private final UsersTaskService usersTaskService;
