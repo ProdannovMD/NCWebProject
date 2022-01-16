@@ -14,7 +14,8 @@
             <tr th:each="user : ${users}"
                 class="table-primary"
                 th:if="${user.id != currentUser.id}">
-                <th scope="row">Task:</th>
+                <th th:unless="${user.hasRole('ROLE_ADMIN')}" scope="row">User</th>
+                <th th:if="${user.hasRole('ROLE_ADMIN')}" scope="row">Admin</th>
                 <td><a class="navbar-brand" th:href="|@{/admin/users/}${user.id}|"
                        th:text="${user.username}"></a></td>
                 <td><a th:href="|@{/admin/users/}${user.id}@{/assign}|">Assign task</a></td>

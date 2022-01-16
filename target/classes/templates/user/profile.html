@@ -17,7 +17,7 @@
             <tbody th:each="task : ${tasks}">
             <tr class="table-primary"
                 th:if="${task.parentTask} == null">
-                <th scope="row">Task:</th>
+                <th scope="row">Task</th>
                 <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
                        th:text="${task.task.name}"></a></td>
                 <td>
@@ -55,7 +55,7 @@
                 </td>
             </tr>
             <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}">
-                <th scope="row">Subtask:</th>
+                <th scope="row">Subtask</th>
                 <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
                        th:text="${subtask.task.name}"></a></td>
                 <td>

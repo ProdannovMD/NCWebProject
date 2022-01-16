@@ -6,6 +6,7 @@ import com.netcracker.application.repository.ActiveTaskRepository;
 import com.netcracker.application.repository.TaskCommentRepository;
 import com.netcracker.application.repository.TaskRepository;
 import com.netcracker.application.repository.UsersTaskRepository;
+import com.netcracker.application.services.TaskHistoryService;
 import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,18 +30,21 @@ public class UsersTaskServiceImpl implements UsersTaskService {
     private final TaskRepository taskRepository;
     private final ActiveTaskRepository activeTaskRepository;
     private final TaskCommentRepository taskCommentRepository;
+    private final TaskHistoryService taskHistoryService;
 
     @Autowired
     public UsersTaskServiceImpl(
             UsersTaskRepository usersTaskRepository,
             TaskRepository taskRepository,
             ActiveTaskRepository activeTaskRepository,
-            TaskCommentRepository taskCommentRepository
+            TaskCommentRepository taskCommentRepository,
+            TaskHistoryService taskHistoryService
     ) {
         this.usersTaskRepository = usersTaskRepository;
         this.taskRepository = taskRepository;
         this.activeTaskRepository = activeTaskRepository;
         this.taskCommentRepository = taskCommentRepository;
+        this.taskHistoryService = taskHistoryService;
     }
 
     @Override
@@ -73,16 +77,24 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         newActiveTask.setTask(usersTask);
         newActiveTask.setStartTime(now);
         activeTaskRepository.save(newActiveTask);
+
+        taskHistoryService.saveTaskHistory(usersTask.getUser(), usersTask.getTask(), "Task set active");
     }
 
     @Override
     public void saveUsersTask(UsersTask usersTask) {
         Task savedTask = usersTask.getTask();
-        if (Objects.isNull(savedTask.getId())) {
+        boolean newTask = Objects.isNull(savedTask.getId());
+        if (newTask) {
             savedTask = taskRepository.save(usersTask.getTask());
         }
         usersTask.setTask(savedTask);
         usersTaskRepository.save(usersTask);
+
+        taskHistoryService.saveTaskHistory(
+                usersTask.getUser(), usersTask.getTask(),
+                newTask ? "Task created" : "Task updated"
+        );
     }
 
     @Override
@@ -121,6 +133,8 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         usersTask.getChildrenTasks().forEach(ct -> deleteUsersTaskById(ct.getId()));
 
         usersTaskRepository.delete(usersTask);
+
+        taskHistoryService.saveTaskHistory(usersTask.getUser(), usersTask.getTask(), "Task deleted from users list");
     }
 
     @Override
@@ -213,5 +227,7 @@ public class UsersTaskServiceImpl implements UsersTaskService {
     @Override
     public void saveTaskComment(TaskComment taskComment) {
         taskCommentRepository.save(taskComment);
+
+        taskHistoryService.saveTaskHistory(taskComment.getUser(), taskComment.getTask(), "Task comment added");
     }
 }
