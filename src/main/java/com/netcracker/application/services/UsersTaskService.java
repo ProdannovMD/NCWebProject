@@ -27,4 +27,6 @@ public interface UsersTaskService {
     List<TaskComment> getTaskCommentsForTask(Task usersTask);
 
     void saveTaskComment(TaskComment taskComment);
+
+    List<UsersTask> getUsersTasksByTask(Task task);
 }

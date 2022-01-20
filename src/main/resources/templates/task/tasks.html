@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      th:include="layout :: page" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div th:fragment="content">
+    <div style="margin-top: 5%" class="container-fluid bg-body">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Created by</th>
+                <th scope="col">Creation time</th>
+                <th scope="col">Last modified</th>
+                <th scope="col">Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="task : ${tasks}"
+                class="table-primary"
+                th:if="${task.modifiable}">
+                <td><a class="navbar-brand" th:href="|@{/admin/tasks/}${task.id}|"
+                       th:text="${task.name}"></a></td>
+                <td><a th:href="|@{/admin/users/}${task.createdBy.id}|" th:text="${task.createdBy.username}"></a></td>
+                <td><p th:text="${task.createdTime}"></p></td>
+                <td><p th:text="${task.modifiedTime}"></p></td>
+                <td><p th:text="${task.status.status}"></p></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

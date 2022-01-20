@@ -230,4 +230,9 @@ public class UsersTaskServiceImpl implements UsersTaskService {
 
         taskHistoryService.saveTaskHistory(taskComment.getUser(), taskComment.getTask(), "Task comment added");
     }
+
+    @Override
+    public List<UsersTask> getUsersTasksByTask(Task task) {
+        return usersTaskRepository.findAllByTask(task);
+    }
 }

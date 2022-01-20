@@ -3,10 +3,7 @@ package com.netcracker.application.controllers;
 import com.netcracker.application.controllers.forms.AssignTaskForm;
 import com.netcracker.application.controllers.forms.StatusForm;
 import com.netcracker.application.model.*;
-import com.netcracker.application.services.StatusService;
-import com.netcracker.application.services.TaskHistoryService;
-import com.netcracker.application.services.UserService;
-import com.netcracker.application.services.UsersTaskService;
+import com.netcracker.application.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +22,7 @@ import java.util.stream.Collectors;
 public class AdminController {
     private final UserService userService;
     private final UsersTaskService usersTaskService;
+    private final TaskService taskService;
     private final StatusService statusService;
     private final TaskHistoryService taskHistoryService;
     private ConversionService conversionService;
@@ -33,11 +31,13 @@ public class AdminController {
     public AdminController(
             UserService userService,
             UsersTaskService usersTaskService,
+            TaskService taskService,
             StatusService statusService,
             TaskHistoryService taskHistoryService
     ) {
         this.userService = userService;
         this.usersTaskService = usersTaskService;
+        this.taskService = taskService;
         this.statusService = statusService;
         this.taskHistoryService = taskHistoryService;
     }
@@ -49,7 +49,7 @@ public class AdminController {
 
     @GetMapping
     public String admin() {
-        return "redirect:/admin/users";
+        return "admin/administration";
     }
 
     @GetMapping("/users")
@@ -148,9 +148,31 @@ public class AdminController {
             history = history.stream().filter(h -> h.getUser().getId().equals(user)).collect(Collectors.toList());
 
         Collections.reverse(history);
-        
+
         model.addAttribute("history", history);
 
         return "history/taskHistory";
+    }
+
+    @GetMapping("/tasks")
+    public String getAllTasks(Model model) {
+        List<Task> tasks = taskService.getAllTasks();
+
+        model.addAttribute("tasks", tasks);
+
+        return "task/tasks";
+    }
+
+    @GetMapping("/tasks/{id}")
+    public String getTask(@PathVariable Long id, Model model) {
+        Task task = taskService.getTaskById(id);
+        List<UsersTask> usersTasks = usersTaskService.getUsersTasksByTask(task);
+        List<TaskComment> comments = usersTaskService.getTaskCommentsForTask(task);
+
+        model.addAttribute("task", task);
+        model.addAttribute("usersTasks", usersTasks);
+        model.addAttribute("comments", comments);
+
+        return "task/task";
     }
 }
