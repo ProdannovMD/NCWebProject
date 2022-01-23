@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Statistic {
-    private String taskName;
+    private UsersTask usersTask;
 
     private String date;
 

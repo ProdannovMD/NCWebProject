@@ -137,19 +137,41 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         taskHistoryService.saveTaskHistory(usersTask.getUser(), usersTask.getTask(), "Task deleted from users list");
     }
 
+    public List<Statistic> getStatisticsForTask(Task task, LocalDate start, LocalDate end) {
+        if (end.isBefore(start))
+            throw new IllegalStateException("Start date should be before the end date");
+
+        List<UsersTask> usersTasks = getUsersTasksByTask(task);
+        List<UsersTask> tasks = new ArrayList<>(usersTasks);
+
+        for (UsersTask usersTask : usersTasks) {
+            tasks.addAll(usersTask.getChildrenTasks());
+        }
+        if (tasks.stream().allMatch(t -> t.getUsages().size() == 0))
+            return new ArrayList<>();
+
+        return getStatisticsForTaskList(tasks, start, end);
+    }
+
     @Override
     public List<Statistic> getStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end) {
         if (end.isBefore(start))
             throw new IllegalStateException("Start date should be before the end date");
 
         List<UsersTask> tasks = new ArrayList<>();
-        List<Long> statisticsTimeRaw = new ArrayList<>();
-        Long totalTimeRaw = 0L;
-        List<Statistic> statistics = new ArrayList<>();
+
         tasks.add(usersTask);
         tasks.addAll(usersTask.getChildrenTasks());
         if (tasks.stream().allMatch(task -> task.getUsages().size() == 0))
-            return statistics;
+            return new ArrayList<>();
+
+        return getStatisticsForTaskList(tasks, start, end);
+    }
+
+    private List<Statistic> getStatisticsForTaskList(List<UsersTask> tasks, LocalDate start, LocalDate end) {
+        Long totalTimeRaw = 0L;
+        List<Long> statisticsTimeRaw = new ArrayList<>();
+        List<Statistic> statistics = new ArrayList<>();
 
         LocalDate minDate = tasks.stream()
                 .flatMap(task -> task.getUsages().stream())
@@ -187,10 +209,11 @@ public class UsersTaskServiceImpl implements UsersTaskService {
                 totalTimeRaw += statisticTime;
                 long hours = TimeUnit.HOURS.convert(statisticTime, TimeUnit.SECONDS);
                 long minutes = Math.floorMod(TimeUnit.MINUTES.convert(statisticTime, TimeUnit.SECONDS), 60);
+                long seconds = Math.floorMod(statisticTime, 60);
 
-                String statisticTimeString = String.format("%sh %sm", hours, minutes);
+                String statisticTimeString = String.format("%sh %sm %ss", hours, minutes, seconds);
                 Statistic statistic = Statistic.builder()
-                        .taskName(task.getTask().getName())
+                        .usersTask(task)
                         .date(current.format(DateTimeFormatter.ISO_LOCAL_DATE))
                         .activeTime(statisticTimeString)
                         .build();

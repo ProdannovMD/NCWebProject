@@ -20,6 +20,8 @@ public interface UsersTaskService {
 
     void deleteUsersTaskById(Long id);
 
+    List<Statistic> getStatisticsForTask(Task task, LocalDate start, LocalDate end);
+
     List<Statistic> getStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end);
 
     List<TaskComment> getTaskCommentsForUsersTask(UsersTask usersTask);

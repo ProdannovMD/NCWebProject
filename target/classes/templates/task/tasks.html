@@ -28,7 +28,7 @@
                 <td><a th:href="|@{/admin/users/}${task.createdBy.id}|" th:text="${task.createdBy.username}"></a></td>
                 <td><p th:text="${task.createdTime}"></p></td>
                 <td><p th:text="${task.modifiedTime}"></p></td>
-                <td><p th:text="${task.status}"></p></td>
+                <td><p th:text="${task.status.status}"></p></td>
             </tr>
             </tbody>
         </table>

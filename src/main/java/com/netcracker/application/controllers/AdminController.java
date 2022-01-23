@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -161,6 +162,21 @@ public class AdminController {
         model.addAttribute("tasks", tasks);
 
         return "task/tasks";
+    }
+
+    @GetMapping("/tasks/{id}/statistics")
+    public String getTaskStatistics(@PathVariable Long id, LocalDate start, LocalDate end, Model model) {
+        Task task = taskService.getTaskById(id);
+        if (Objects.isNull(start))
+            start = LocalDate.MIN;
+        if (Objects.isNull(end))
+            end = LocalDate.MAX;
+        List<Statistic> statistics = usersTaskService.getStatisticsForTask(task, start, end);
+
+        model.addAttribute("task", task);
+        model.addAttribute("statistics", statistics);
+
+        return "statistics/adminStatistics";
     }
 
     @GetMapping("/tasks/{id}")

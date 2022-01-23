@@ -10,13 +10,15 @@
 <div th:fragment="content">
     <div style="margin-top: 5%" class="container-fluid bg-body">
         <div class="container">
-            <p class="h1" th:text="'Statistics for task '+${task.task.name}"></p>
-            <a th:href="|@{/profile/tasks/}${task.id}|"> to task</a>
+            <p class="h1" th:text="'Statistics for task '+${task.name}"></p>
+            <a th:href="|@{/admin/tasks/}${task.id}|"> to task</a>
         </div>
         <table class="table table-striped">
             <thead>
             <tr>
+                <th scope="col"></th>
                 <th scope="col">Task</th>
+                <th scope="col">User</th>
                 <th scope="col">Date</th>
                 <th scope="col">Active time</th>
                 <th scope="col">Active percent</th>
@@ -24,7 +26,11 @@
             </thead>
             <tbody>
             <tr th:each="statistic : ${statistics}" th:if="${statistic.getActivePercent() >= 0.01}">
-                <td th:text="${statistic.usersTask.task.getName()}"></td>
+                <th scope="row" th:text="${statistic.usersTask.parentTask == null ? 'Task' : 'Subtask'}"></th>
+                <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}@{/tasks/}${statistic.usersTask.id}|"
+                       th:text="${statistic.usersTask.task.getName()}"></a></td>
+                <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}|"
+                       th:text="${statistic.usersTask.user.getUsername()}"></a></td>
                 <td th:text="${statistic.getDate()}"></td>
                 <td th:text="${statistic.getActiveTime()}"></td>
                 <td th:text="${#numbers.formatDecimal(statistic.getActivePercent(),3,2)}+'%'"></td>

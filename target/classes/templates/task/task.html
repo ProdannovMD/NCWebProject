@@ -41,7 +41,7 @@
 <!--                <input th:value="${task.id}" name="task" hidden>-->
 <!--                <input type="submit" value="Set active">-->
 <!--            </form>-->
-            <a th:href="|@{/admin/tasks/statistics/}${task.id}|">Statistics</a>
+            <a th:href="|@{/admin/tasks/}${task.id}@{/statistics}|">Statistics</a>
             <div th:if="${usersTasks.size() > 0}">
                 <p>Assigned to</p>
                 <ul>
@@ -50,7 +50,7 @@
                                th:text="
                                |${usersTask.user.username}
                                ${usersTask.isActive() ? ' (Active) ' : ' '}
-                               'Active time: '
+                               Active time:
                                ${usersTask.getActiveTime()}
                                |">
                        </p>
