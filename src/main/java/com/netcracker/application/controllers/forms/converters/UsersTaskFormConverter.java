@@ -9,11 +9,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Component
 public class UsersTaskFormConverter implements Converter<UsersTask, UsersTaskForm> {
-
+    private final String DATE_FORMAT = "yyyy-MM-dd";
     private final UserService userService;
 
     @Autowired
@@ -36,6 +38,11 @@ public class UsersTaskFormConverter implements Converter<UsersTask, UsersTaskFor
             form.setParent(source.getParentTask().getId());
         form.setName(source.getTask().getName());
         form.setDescription(source.getTask().getDescription());
+        if (Objects.nonNull(source.getTask().getDueTime())) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT)
+                            .withZone(ZoneId.systemDefault());
+            form.setDueTime(formatter.format(source.getTask().getDueTime()));
+        }
 
         return form;
     }

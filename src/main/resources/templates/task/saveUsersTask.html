@@ -30,6 +30,10 @@
                 </select>
                 <label for="parent">Task Parent</label>
             </div>
+            <div class="input-group form-floating">
+                <span class="input-group-text" id="basic-addon1">Due time</span>
+                <input name="dueTime" id="startDate" class="form-control" type="date" th:field="*{dueTime}"/>
+            </div>
             <div class="input-group form-floating mb-3">
                 <span class="input-group-text">Description</span>
                 <textarea id="description" class="form-control" th:field="*{description}"></textarea>

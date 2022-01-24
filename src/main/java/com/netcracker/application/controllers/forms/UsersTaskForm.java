@@ -10,6 +10,15 @@ public class UsersTaskForm {
     private String name;
     private Long parent;
     private String description;
+    private String dueTime;
+
+    public String getDueTime() {
+        return dueTime;
+    }
+
+    public void setDueTime(String dueTime) {
+        this.dueTime = dueTime;
+    }
 
     public String getDescription() {
         return description;

@@ -21,8 +21,8 @@
                 <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
                        th:text="${task.task.name}"></a></td>
                 <td>
-                    <p th:text="'Status: '+${task.task.status.status}"></p>
-                    <div th:if="${task.isActive()}">(Active)</div>
+                    <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
+                    <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
                 </td>
                 <td>
                     <div th:text="${task.getActiveTime()}"></div>
@@ -60,7 +60,7 @@
                        th:text="${subtask.task.name}"></a></td>
                 <td>
                     <p th:text="'Status: '+${subtask.task.status.status}"></p>
-                    <div th:if="${subtask.isActive()}">(Active)</div>
+                    <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
                 </td>
                 <td>
                     <div th:text="${subtask.getActiveTime()}"></div>

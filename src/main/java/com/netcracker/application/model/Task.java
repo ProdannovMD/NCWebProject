@@ -4,6 +4,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tasks")
@@ -38,6 +39,28 @@ public class Task {
 
     @Column(name = "description")
     private String description;
+
+    @Column(name = "due_time")
+    private Instant dueTime;
+
+    @Column(name = "completed_time")
+    private Instant completedTime;
+
+    public Instant getCompletedTime() {
+        return completedTime;
+    }
+
+    public void setCompletedTime(Instant completedTime) {
+        this.completedTime = completedTime;
+    }
+
+    public Instant getDueTime() {
+        return dueTime;
+    }
+
+    public void setDueTime(Instant dueTime) {
+        this.dueTime = dueTime;
+    }
 
     public String getDescription() {
         return description;
@@ -101,6 +124,14 @@ public class Task {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isOverdue() {
+        if (Objects.nonNull(dueTime)) {
+            Instant check = Objects.isNull(completedTime) ? Instant.now() : completedTime;
+            return check.isAfter(dueTime);
+        }
+        return false;
     }
 
     @Override

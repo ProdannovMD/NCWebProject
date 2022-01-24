@@ -25,11 +25,14 @@
                             th:text="${status.status}" th:value="${status.id}"></option>
                 </select>
                 <input type="submit" value="Set">
+                <p th:if="${task.task.status.id >= 3}" th:text="|Completed on: ${task.task.completedTime}|"></p>
             </form>
             <div th:if="${task.task.id != 1}">
                 <p th:text="'Created by: '+${task.task.createdBy.username}"></p>
                 <p th:text="'Created: '+${task.task.createdTime}"></p>
                 <p th:text="'Last modified: '+${task.task.modifiedTime}"></p>
+                <p th:if="${task.task.dueTime != null}"
+                   th:text="|Due to: ${task.task.dueTime}${task.task.isOverdue() ? ' (Overdue)' : ''}|"></p>
             </div>
             <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id}"
                th:href="|@{/tasks/save?id=}${task.id}|">Edit</a>

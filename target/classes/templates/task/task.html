@@ -14,47 +14,50 @@
             <label for="description">Description:</label>
             <textarea id="description" type="text" cols="40" rows="10" disabled
                       th:text="${task.description}"></textarea>
-<!--            <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"-->
-<!--                  th:method="POST" th:action="@{/tasks/change_status}" th:object="${form}">-->
-<!--                <input th:value="${task.task.id}" th:field="*{task}" hidden>-->
-<!--                <label for="status">Status</label>-->
-<!--                <select id="status" th:field="*{status}">-->
-<!--                    <option th:each="status : ${statuses}"-->
-<!--                            th:text="${status.status}" th:value="${status.id}"></option>-->
-<!--                </select>-->
-<!--                <input type="submit" value="Set">-->
-<!--            </form>-->
+            <!--            <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"-->
+            <!--                  th:method="POST" th:action="@{/tasks/change_status}" th:object="${form}">-->
+            <!--                <input th:value="${task.task.id}" th:field="*{task}" hidden>-->
+            <!--                <label for="status">Status</label>-->
+            <!--                <select id="status" th:field="*{status}">-->
+            <!--                    <option th:each="status : ${statuses}"-->
+            <!--                            th:text="${status.status}" th:value="${status.id}"></option>-->
+            <!--                </select>-->
+            <!--                <input type="submit" value="Set">-->
+            <!--            </form>-->
             <div th:if="${task.id != 1}">
                 <p th:text="'Created by: '+${task.createdBy.username}"></p>
                 <p th:text="'Created: '+${task.createdTime}"></p>
                 <p th:text="'Last modified: '+${task.modifiedTime}"></p>
+                <p th:if="${task.dueTime != null}"
+                   th:text="|Due to: ${task.dueTime}${task.isOverdue() ? ' (Overdue)' : ''}|"></p>
+                <p th:if="${task.status.id >= 3}" th:text="|'Completed on: '${task.completedTime}|"></p>
             </div>
-<!--            <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id}"-->
-<!--               th:href="|@{/tasks/save?id=}${task.id}|">Edit</a>-->
-<!--            <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"-->
-<!--                  th:method="POST" th:action="@{/tasks/delete}">-->
-<!--                <input th:value="${task.id}" name="task" hidden>-->
-<!--                <input type="submit" value="Delete">-->
-<!--            </form>-->
-<!--            <form th:if="${currentUser == null or currentUser.id == user.id}"-->
-<!--                  th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">-->
-<!--                <input th:value="${task.id}" name="task" hidden>-->
-<!--                <input type="submit" value="Set active">-->
-<!--            </form>-->
+            <!--            <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id}"-->
+            <!--               th:href="|@{/tasks/save?id=}${task.id}|">Edit</a>-->
+            <!--            <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"-->
+            <!--                  th:method="POST" th:action="@{/tasks/delete}">-->
+            <!--                <input th:value="${task.id}" name="task" hidden>-->
+            <!--                <input type="submit" value="Delete">-->
+            <!--            </form>-->
+            <!--            <form th:if="${currentUser == null or currentUser.id == user.id}"-->
+            <!--                  th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">-->
+            <!--                <input th:value="${task.id}" name="task" hidden>-->
+            <!--                <input type="submit" value="Set active">-->
+            <!--            </form>-->
             <a th:href="|@{/admin/tasks/}${task.id}@{/statistics}|">Statistics</a>
             <div th:if="${usersTasks.size() > 0}">
                 <p>Assigned to</p>
                 <ul>
-                   <li th:each="usersTask : ${usersTasks}">
-                       <p
-                               th:text="
+                    <li th:each="usersTask : ${usersTasks}">
+                        <p
+                                th:text="
                                |${usersTask.user.username}
                                ${usersTask.isActive() ? ' (Active) ' : ' '}
                                Active time:
                                ${usersTask.getActiveTime()}
                                |">
-                       </p>
-                   </li>
+                        </p>
+                    </li>
                 </ul>
             </div>
         </div>
