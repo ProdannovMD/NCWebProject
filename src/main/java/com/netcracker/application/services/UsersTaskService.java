@@ -22,7 +22,11 @@ public interface UsersTaskService {
 
     List<Statistic> getStatisticsForTask(Task task, LocalDate start, LocalDate end);
 
+    List<Statistic> getMonthlyStatisticsForTask(Task task, LocalDate start, LocalDate end);
+
     List<Statistic> getStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end);
+
+    List<Statistic> getMonthlyStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end);
 
     List<TaskComment> getTaskCommentsForUsersTask(UsersTask usersTask);
 

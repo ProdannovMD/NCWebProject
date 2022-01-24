@@ -17,7 +17,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class UsersTaskServiceImpl implements UsersTaskService {
     private static final Long DEFAULT_TASK_ID = 1L;
+    private static final String DATE_FORMAT_DAYS = "yyyy.MM.dd";
+    private static final String DATE_FORMAT_MONTHS = "yyyy.MM";
 
     private final UsersTaskRepository usersTaskRepository;
     private final TaskRepository taskRepository;
@@ -137,11 +142,40 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         taskHistoryService.saveTaskHistory(usersTask.getUser(), usersTask.getTask(), "Task deleted from users list");
     }
 
+    @Override
     public List<Statistic> getStatisticsForTask(Task task, LocalDate start, LocalDate end) {
+        List<UsersTask> tasks = new ArrayList<>(getUsersTasksByTask(task));
+
+        return getStatisticsForTaskList(tasks, start, end, ChronoUnit.DAYS);
+    }
+
+    @Override
+    public List<Statistic> getMonthlyStatisticsForTask(Task task, LocalDate start, LocalDate end) {
+        List<UsersTask> tasks = new ArrayList<>(getUsersTasksByTask(task));
+
+        return getStatisticsForTaskList(tasks, start, end, ChronoUnit.MONTHS);
+    }
+
+    @Override
+    public List<Statistic> getStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end) {
+        List<UsersTask> tasks = new ArrayList<>();
+        tasks.add(usersTask);
+
+        return getStatisticsForTaskList(tasks, start, end, ChronoUnit.DAYS);
+    }
+
+    @Override
+    public List<Statistic> getMonthlyStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end) {
+        List<UsersTask> tasks = new ArrayList<>();
+        tasks.add(usersTask);
+
+        return getStatisticsForTaskList(tasks, start, end, ChronoUnit.MONTHS);
+    }
+
+    private List<Statistic> getStatisticsForTaskList(List<UsersTask> usersTasks, LocalDate start, LocalDate end, TemporalUnit timeUnit) {
         if (end.isBefore(start))
             throw new IllegalStateException("Start date should be before the end date");
 
-        List<UsersTask> usersTasks = getUsersTasksByTask(task);
         List<UsersTask> tasks = new ArrayList<>(usersTasks);
 
         for (UsersTask usersTask : usersTasks) {
@@ -150,25 +184,6 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         if (tasks.stream().allMatch(t -> t.getUsages().size() == 0))
             return new ArrayList<>();
 
-        return getStatisticsForTaskList(tasks, start, end);
-    }
-
-    @Override
-    public List<Statistic> getStatisticsForUsersTask(UsersTask usersTask, LocalDate start, LocalDate end) {
-        if (end.isBefore(start))
-            throw new IllegalStateException("Start date should be before the end date");
-
-        List<UsersTask> tasks = new ArrayList<>();
-
-        tasks.add(usersTask);
-        tasks.addAll(usersTask.getChildrenTasks());
-        if (tasks.stream().allMatch(task -> task.getUsages().size() == 0))
-            return new ArrayList<>();
-
-        return getStatisticsForTaskList(tasks, start, end);
-    }
-
-    private List<Statistic> getStatisticsForTaskList(List<UsersTask> tasks, LocalDate start, LocalDate end) {
         Long totalTimeRaw = 0L;
         List<Long> statisticsTimeRaw = new ArrayList<>();
         List<Statistic> statistics = new ArrayList<>();
@@ -205,7 +220,7 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         LocalDate current = LocalDate.from(start);
         while (current.isBefore(end) || current.isEqual(end)) {
             for (UsersTask task : tasks) {
-                Long statisticTime = task.getActiveTimeForDateRaw(current, current.plusDays(1));
+                Long statisticTime = task.getActiveTimeForDateRaw(current, current.plus(1, timeUnit));
                 totalTimeRaw += statisticTime;
                 long hours = TimeUnit.HOURS.convert(statisticTime, TimeUnit.SECONDS);
                 long minutes = Math.floorMod(TimeUnit.MINUTES.convert(statisticTime, TimeUnit.SECONDS), 60);
@@ -214,7 +229,15 @@ public class UsersTaskServiceImpl implements UsersTaskService {
                 String statisticTimeString = String.format("%sh %sm %ss", hours, minutes, seconds);
                 Statistic statistic = Statistic.builder()
                         .usersTask(task)
-                        .date(current.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .date(
+                                current.format(
+                                        DateTimeFormatter.ofPattern(
+                                                timeUnit.equals(ChronoUnit.MONTHS) ?
+                                                        DATE_FORMAT_MONTHS :
+                                                        DATE_FORMAT_DAYS
+                                        )
+                                )
+                        )
                         .activeTime(statisticTimeString)
                         .build();
 
@@ -225,7 +248,7 @@ public class UsersTaskServiceImpl implements UsersTaskService {
 
             }
 
-            current = current.plusDays(1);
+            current = current.plus(1, timeUnit);
         }
 
         for (int i = 0; i < statistics.size(); i++) {
@@ -233,6 +256,7 @@ public class UsersTaskServiceImpl implements UsersTaskService {
             statistics.get(i).setActivePercent(activePercent * 100);
         }
 
+        Collections.reverse(statistics);
         return statistics;
     }
 

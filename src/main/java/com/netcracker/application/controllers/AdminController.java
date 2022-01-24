@@ -12,15 +12,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
+    private final String DATE_INPUT_FORMAT = "yyyy-MM-dd";
     private final UserService userService;
     private final UsersTaskService usersTaskService;
     private final TaskService taskService;
@@ -165,16 +165,46 @@ public class AdminController {
     }
 
     @GetMapping("/tasks/{id}/statistics")
-    public String getTaskStatistics(@PathVariable Long id, LocalDate start, LocalDate end, Model model) {
+    public String getTaskStatistics(@PathVariable Long id, String start, String end, Long userId, Model model) {
         Task task = taskService.getTaskById(id);
-        if (Objects.isNull(start))
-            start = LocalDate.MIN;
-        if (Objects.isNull(end))
-            end = LocalDate.MAX;
-        List<Statistic> statistics = usersTaskService.getStatisticsForTask(task, start, end);
+
+        LocalDate startDate = LocalDate.MIN;
+        LocalDate endDate = LocalDate.MAX;
+
+        if (Objects.nonNull(start) && !start.isEmpty()) {
+            try {
+                startDate = LocalDate.parse(start, DateTimeFormatter.ofPattern(DATE_INPUT_FORMAT));
+            } catch (IllegalArgumentException ignore) {
+            }
+        }
+        if (Objects.nonNull(end) && !end.isEmpty()) {
+            try {
+                endDate = LocalDate.parse(end, DateTimeFormatter.ofPattern(DATE_INPUT_FORMAT));
+            } catch (IllegalArgumentException ignore) {
+            }
+        }
+        List<Statistic> statistics = usersTaskService.getStatisticsForTask(task, startDate, endDate);
+        List<Statistic> monthlyStatistics = usersTaskService.getMonthlyStatisticsForTask(task, startDate, endDate);
+
+        Set<User> users = new HashSet<>();
+        statistics.forEach(statistic -> users.add(statistic.getUsersTask().getUser()));
+
+        if (Objects.nonNull(userId) && userId > 0) {
+            statistics = statistics.stream()
+                    .filter(statistic -> statistic.getUsersTask().getUser().getId().equals(userId))
+                    .collect(Collectors.toList());
+            monthlyStatistics = monthlyStatistics.stream()
+                    .filter(statistic -> statistic.getUsersTask().getUser().getId().equals(userId))
+                    .collect(Collectors.toList());
+        }
 
         model.addAttribute("task", task);
+        model.addAttribute("users", users);
         model.addAttribute("statistics", statistics);
+        model.addAttribute("monthlyStatistics", monthlyStatistics);
+        model.addAttribute("start", start);
+        model.addAttribute("end", end);
+        model.addAttribute("userId", userId);
 
         return "statistics/adminStatistics";
     }

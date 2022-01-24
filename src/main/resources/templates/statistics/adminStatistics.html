@@ -13,30 +13,82 @@
             <p class="h1" th:text="'Statistics for task '+${task.name}"></p>
             <a th:href="|@{/admin/tasks/}${task.id}|"> to task</a>
         </div>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th scope="col"></th>
-                <th scope="col">Task</th>
-                <th scope="col">User</th>
-                <th scope="col">Date</th>
-                <th scope="col">Active time</th>
-                <th scope="col">Active percent</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="statistic : ${statistics}" th:if="${statistic.getActivePercent() >= 0.01}">
-                <th scope="row" th:text="${statistic.usersTask.parentTask == null ? 'Task' : 'Subtask'}"></th>
-                <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}@{/tasks/}${statistic.usersTask.id}|"
-                       th:text="${statistic.usersTask.task.getName()}"></a></td>
-                <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}|"
-                       th:text="${statistic.usersTask.user.getUsername()}"></a></td>
-                <td th:text="${statistic.getDate()}"></td>
-                <td th:text="${statistic.getActiveTime()}"></td>
-                <td th:text="${#numbers.formatDecimal(statistic.getActivePercent(),3,2)}+'%'"></td>
-            </tr>
-            </tbody>
-        </table>
+        <form th:action="|@{/admin/tasks/}${task.id}@{/statistics}|" th:method="GET">
+            <div class="input-daterange input-group mb-3 mt-3" id="datepicker">
+                <span class="input-group-text" id="basic-addon1">Start</span>
+                <input name="start" id="startDate" class="form-control" type="date" th:value="${start}"/>
+                <span class="input-group-text" id="basic-addon2">End</span>
+                <input name="end" id="endDate" class="form-control" type="date" th:value="${end}"/>
+                <span class="input-group-text" id="basic-addon3">User</span>
+                <select class="form-select form-select-lg" id="userId" name="userId">
+                    <option value="0">None</option>
+                    <option th:each="user : ${users}"
+                            th:text="${user.username}" th:value="${user.id}"
+                            th:selected="${user.id == userId}"></option>
+                </select>
+                <input class="btn btn-primary btn-lg" type="submit" value="Filter">
+            </div>
+        </form>
+        <nav>
+            <div class="nav nav-tabs mb-3" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-daily-tab" data-bs-toggle="tab" data-bs-target="#nav-daily"
+                        type="button" role="tab" aria-controls="nav-daily" aria-selected="true">Daily statistics
+                </button>
+                <button class="nav-link" id="nav-monthly-tab" data-bs-toggle="tab" data-bs-target="#nav-monthly"
+                        type="button" role="tab" aria-controls="nav-monthly" aria-selected="false">Monthly statistics
+                </button>
+            </div>
+        </nav>
+        <div class="tab-content table-responsive" id="nav-tabContent">
+            <table class="table table-striped tab-pane fade show active" id="nav-daily" role="tabpanel" aria-labelledby="nav-home-tab">
+                <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Task</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Active time</th>
+                    <th scope="col">Active percent</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="statistic : ${statistics}" th:if="${statistic.getActivePercent() >= 0.01}">
+                    <th scope="row" th:text="${statistic.usersTask.parentTask == null ? 'Task' : 'Subtask'}"></th>
+                    <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}@{/tasks/}${statistic.usersTask.id}|"
+                           th:text="${statistic.usersTask.task.getName()}"></a></td>
+                    <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}|"
+                           th:text="${statistic.usersTask.user.getUsername()}"></a></td>
+                    <td th:text="${statistic.getDate()}"></td>
+                    <td th:text="${statistic.getActiveTime()}"></td>
+                    <td th:text="${#numbers.formatDecimal(statistic.getActivePercent(),3,2)}+'%'"></td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-striped tab-pane fade" id="nav-monthly" role="tabpanel" aria-labelledby="nav-monthly-tab">
+                <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Task</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Active time</th>
+                    <th scope="col">Active percent</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="statistic : ${monthlyStatistics}" th:if="${statistic.getActivePercent() >= 0.01}">
+                    <th scope="row" th:text="${statistic.usersTask.parentTask == null ? 'Task' : 'Subtask'}"></th>
+                    <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}@{/tasks/}${statistic.usersTask.id}|"
+                           th:text="${statistic.usersTask.task.getName()}"></a></td>
+                    <td><a th:href="|@{/admin/users/}${statistic.usersTask.user.id}|"
+                           th:text="${statistic.usersTask.user.getUsername()}"></a></td>
+                    <td th:text="${statistic.getDate()}"></td>
+                    <td th:text="${statistic.getActiveTime()}"></td>
+                    <td th:text="${#numbers.formatDecimal(statistic.getActivePercent(),3,2)}+'%'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 </body>
