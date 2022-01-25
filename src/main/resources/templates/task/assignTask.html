@@ -14,22 +14,21 @@
         <form th:method="POST" th:action="|@{/admin/users/}${user.id}@{/assign}|" th:object="${form}">
                 <h1 class="h3 mb-3 fw-normal" th:text="'Assign task for user: '+${user.username}"></h1>
             <input id="id" name="user" th:field="*{user}" hidden>
-            <div class="form-floating mb-3">
+            <div class="form-floating">
                 <select class="form-select form-select-lg" id="parent" th:field="*{parent}">
                     <option value="0">None</option>
                     <option th:each="parent : ${parents}" th:if="${parent.parentTask == null}"
                             th:text="${parent.task.name}" th:value="${parent.id}"></option>
                 </select>
                 <label for="parent">Parent</label>
+            </div>
+            <div class="form-floating mb-3">
                 <select class="form-select form-select-lg" id="task" th:field="*{task}">
                     <option th:each="task : ${tasks}"
                             th:text="${task.task.name}" th:value="${task.task.id}"></option>
                 </select>
                 <label for="task">Task</label>
             </div>
-<!--            <ul th:each="error: ${errors}">-->
-<!--                <li class="text-danger text-start" th:text="${error}"></li>-->
-<!--            </ul>-->
             <input class="w-100 btn btn-lg btn-primary" type="submit" value="Assign">
         </form>
     </main>

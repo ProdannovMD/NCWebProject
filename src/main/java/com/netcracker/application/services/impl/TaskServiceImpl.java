@@ -3,7 +3,9 @@ package com.netcracker.application.services.impl;
 import com.netcracker.application.controllers.exceptions.ResourceNotFoundException;
 import com.netcracker.application.model.Task;
 import com.netcracker.application.repository.TaskRepository;
+import com.netcracker.application.repository.UsersTaskRepository;
 import com.netcracker.application.services.TaskService;
+import com.netcracker.application.services.UsersTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +15,12 @@ import java.util.Objects;
 @Service
 public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
+    private final UsersTaskRepository usersTaskRepository;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, UsersTaskRepository usersTaskRepository) {
         this.taskRepository = taskRepository;
+        this.usersTaskRepository = usersTaskRepository;
     }
 
     @Override
@@ -30,5 +34,16 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
+    }
+
+    @Override
+    public boolean isUsed(Task task) {
+        return usersTaskRepository.findAllByTask(task).size() > 0;
+    }
+
+    @Override
+    public void deleteTask(Task task) {
+        if (!isUsed(task))
+            taskRepository.delete(task);
     }
 }

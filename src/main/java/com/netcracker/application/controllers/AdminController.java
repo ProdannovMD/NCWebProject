@@ -99,6 +99,8 @@ public class AdminController {
 
         AssignTaskForm form = new AssignTaskForm();
         form.setUser(id);
+        if (Objects.nonNull(parent))
+            form.setParent(parent);
 
         model.addAttribute("parents", usersTasks);
         model.addAttribute("tasks", currentUsersTasks);
@@ -159,8 +161,11 @@ public class AdminController {
     public String getAllTasks(Model model) {
         List<Task> tasks = taskService.getAllTasks();
         Collections.reverse(tasks);
+        List<Task> usedTasks = tasks.stream().filter(taskService::isUsed).collect(Collectors.toList());
+        List<Task> unusedTasks = tasks.stream().filter(task -> !taskService.isUsed(task)).collect(Collectors.toList());
 
-        model.addAttribute("tasks", tasks);
+        model.addAttribute("usedTasks", usedTasks);
+        model.addAttribute("unusedTasks", unusedTasks);
 
         return "task/tasks";
     }
@@ -221,5 +226,13 @@ public class AdminController {
         model.addAttribute("comments", comments);
 
         return "task/task";
+    }
+
+    @PostMapping("/tasks/{id}/delete")
+    public String deleteTask(@PathVariable Long id) {
+        Task task = taskService.getTaskById(id);
+        taskService.deleteTask(task);
+
+        return "redirect:/admin/tasks";
     }
 }

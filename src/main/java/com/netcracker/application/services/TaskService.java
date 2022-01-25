@@ -8,4 +8,8 @@ public interface TaskService {
     Task getTaskById(Long id);
 
     List<Task> getAllTasks();
+
+    boolean isUsed(Task task);
+
+    void deleteTask(Task task);
 }

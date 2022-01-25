@@ -9,29 +9,72 @@
 <body>
 <div th:fragment="content">
     <div style="margin-top: 5%" class="container-fluid bg-body">
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Created by</th>
-                <th scope="col">Creation time</th>
-                <th scope="col">Last modified</th>
-                <th scope="col">Status</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="task : ${tasks}"
-                class="table-primary"
-                th:if="${task.modifiable}">
-                <td><a class="navbar-brand" th:href="|@{/admin/tasks/}${task.id}|"
-                       th:text="${task.name}"></a></td>
-                <td><a th:href="|@{/admin/users/}${task.createdBy.id}|" th:text="${task.createdBy.username}"></a></td>
-                <td><p th:text="${task.getCreatedTimeFormatted()}"></p></td>
-                <td><p th:text="${task.getModifiedTimeFormatted()}"></p></td>
-                <td><p th:text="${task.status.status}"></p></td>
-            </tr>
-            </tbody>
-        </table>
+        <nav>
+            <div class="nav nav-tabs mb-3" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-used-tab" data-bs-toggle="tab" data-bs-target="#nav-used"
+                        type="button" role="tab" aria-controls="nav-used" aria-selected="true">Used tasks
+                </button>
+                <button class="nav-link" id="nav-unused-tab" data-bs-toggle="tab" data-bs-target="#nav-unused"
+                        type="button" role="tab" aria-controls="nav-unused" aria-selected="false">Unused tasks
+                </button>
+            </div>
+        </nav>
+        <div class="tab-content table-responsive" id="nav-tabContent">
+            <table class="table table-hover tab-pane fade show active" id="nav-used" role="tabpanel" aria-labelledby="nav-used-tab">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Created by</th>
+                    <th scope="col">Creation time</th>
+                    <th scope="col">Last modified</th>
+                    <th scope="col">Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="task : ${usedTasks}"
+                    class="table-primary"
+                    th:if="${task.modifiable}">
+                    <td><a class="navbar-brand" th:href="|@{/admin/tasks/}${task.id}|"
+                           th:text="${task.name}"></a></td>
+                    <td><a th:href="|@{/admin/users/}${task.createdBy.id}|" th:text="${task.createdBy.username}"></a>
+                    </td>
+                    <td><p th:text="${task.getCreatedTimeFormatted()}"></p></td>
+                    <td><p th:text="${task.getModifiedTimeFormatted()}"></p></td>
+                    <td><p th:text="${task.status.status}"></p></td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-hover tab-pane fade" id="nav-unused" role="tabpanel" aria-labelledby="nav-unused-tab">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Created by</th>
+                    <th scope="col">Creation time</th>
+                    <th scope="col">Last modified</th>
+                    <th scope="col">Status</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="task : ${unusedTasks}"
+                    class="table-primary"
+                    th:if="${task.modifiable}">
+                    <td><a class="navbar-brand" th:href="|@{/admin/tasks/}${task.id}|"
+                           th:text="${task.name}"></a></td>
+                    <td><a th:href="|@{/admin/users/}${task.createdBy.id}|" th:text="${task.createdBy.username}"></a>
+                    </td>
+                    <td><p th:text="${task.getCreatedTimeFormatted()}"></p></td>
+                    <td><p th:text="${task.getModifiedTimeFormatted()}"></p></td>
+                    <td><p th:text="${task.status.status}"></p></td>
+                    <td>
+                        <form th:action="|@{/admin/tasks/}${task.id}@{/delete}|" th:method="POST">
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 </body>
