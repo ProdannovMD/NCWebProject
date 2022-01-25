@@ -26,8 +26,8 @@
                 <td><a class="navbar-brand" th:href="|@{/admin/tasks/}${task.id}|"
                        th:text="${task.name}"></a></td>
                 <td><a th:href="|@{/admin/users/}${task.createdBy.id}|" th:text="${task.createdBy.username}"></a></td>
-                <td><p th:text="${task.createdTime}"></p></td>
-                <td><p th:text="${task.modifiedTime}"></p></td>
+                <td><p th:text="${task.getCreatedTimeFormatted()}"></p></td>
+                <td><p th:text="${task.getModifiedTimeFormatted()}"></p></td>
                 <td><p th:text="${task.status.status}"></p></td>
             </tr>
             </tbody>

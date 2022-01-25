@@ -25,16 +25,16 @@
                             th:text="${status.status}" th:value="${status.id}"></option>
                 </select>
                 <input type="submit" value="Set">
-                <p th:if="${task.task.status.id >= 3}" th:text="|Completed on: ${task.task.completedTime}|"></p>
+                <p th:if="${task.task.status.id >= 3}" th:text="|Completed on: ${task.task.getCompletedTimeFormatted()}|"></p>
             </form>
             <div th:if="${task.task.id != 1}">
                 <p th:text="'Created by: '+${task.task.createdBy.username}"></p>
-                <p th:text="'Created: '+${task.task.createdTime}"></p>
-                <p th:text="'Last modified: '+${task.task.modifiedTime}"></p>
+                <p th:text="'Created: '+${task.task.getCreatedTimeFormatted()}"></p>
+                <p th:text="'Last modified: '+${task.task.getModifiedTimeFormatted()}"></p>
                 <p th:if="${task.task.dueTime != null}"
-                   th:text="|Due to: ${task.task.dueTime}${task.task.isOverdue() ? ' (Overdue)' : ''}|"></p>
+                   th:text="|Due to: ${task.task.getDueTimeFormatted()}${task.task.isOverdue() ? ' (Overdue)' : ''}|"></p>
             </div>
-            <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id}"
+            <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or currentUser.id == task.task.createdBy.id}"
                th:href="|@{/tasks/save?id=}${task.id}|">Edit</a>
             <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
                   th:method="POST" th:action="@{/tasks/delete}">
@@ -54,7 +54,7 @@
             <p>Comments:</p>
             <ul>
                 <li th:each="comment : ${comments}"
-                    th:text="${comment.user.username}+': '+${comment.comment}+' ('+${comment.creationTime}+')'"></li>
+                    th:text="${comment.user.username}+': '+${comment.comment}+' ('+${comment.getCreationTimeFormatted()}+')'"></li>
             </ul>
         </div>
         <div th:unless="${task.parentTask == null}">

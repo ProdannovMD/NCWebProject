@@ -13,84 +13,498 @@
             <p class="h1" th:text="'Profile for user: '+${user.username}"></p>
             <a th:if="${currentUser == null or currentUser.id == user.id}" th:href="@{/profile/edit}"> Edit</a>
         </div>
-        <table class="table table-hover">
-            <tbody th:each="task : ${tasks}">
-            <tr class="table-primary"
-                th:if="${task.parentTask} == null">
-                <th scope="row">Task</th>
-                <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
-                       th:text="${task.task.name}"></a></td>
-                <td>
-                    <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
-                    <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
-                </td>
-                <td>
-                    <div th:text="${task.getActiveTime()}"></div>
-                </td>
-                <td>
-                    <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
-                       th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
-                </td>
-                <td>
-                    <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
-                       th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
-                <td>
-                    <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
-                          th:method="POST" th:action="@{/tasks/delete}">
-                        <input th:value="${task.id}" name="task" hidden>
-                        <input type="submit" value="Delete">
-                    </form>
-                </td>
-                <td>
-                    <form th:if="${currentUser == null or currentUser.id == user.id}"
-                          th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
-                        <input th:value="${task.id}" name="task" hidden>
-                        <input type="submit" value="Set active">
-                    </form>
-                </td>
-                <td th:if="${currentUser == null or currentUser.id == user.id}">
-                    <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
-                        Create subtask
-                    </a>
-                </td>
-            </tr>
-            <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}">
-                <th scope="row">Subtask</th>
-                <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
-                       th:text="${subtask.task.name}"></a></td>
-                <td>
-                    <p th:text="'Status: '+${subtask.task.status.status}"></p>
-                    <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
-                </td>
-                <td>
-                    <div th:text="${subtask.getActiveTime()}"></div>
-                </td>
-                <td>
-                    <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
-                       th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
-                </td>
-                <td>
-                    <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
-                       th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
-                <td>
-                    <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
-                          th:method="POST" th:action="@{/tasks/delete}">
-                        <input th:value="${subtask.id}" name="task" hidden>
-                        <input type="submit" value="Delete">
-                    </form>
-                </td>
-                <td>
-                    <form th:if="${currentUser == null or currentUser.id == user.id}"
-                          th:unless="${subtask.isActive()}" th:method="POST"
-                          th:action="@{/tasks/active}">
-                        <input th:value="${subtask.id}" name="task" hidden>
-                        <input type="submit" value="Set active">
-                    </form>
-                </td>
-                <td></td>
-            </tr>
-            </tbody>
-        </table>
+        <nav>
+            <div class="nav nav-tabs mb-3" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-in-progress-tab" data-bs-toggle="tab" data-bs-target="#nav-in-progress"
+                        type="button" role="tab" aria-controls="nav-in-progress" aria-selected="true">In progress
+                </button>
+                <button class="nav-link" id="nav-entering-tab" data-bs-toggle="tab" data-bs-target="#nav-entering"
+                        type="button" role="tab" aria-controls="nav-entering" aria-selected="false">Entering
+                </button>
+                <button class="nav-link" id="nav-ready-tab" data-bs-toggle="tab" data-bs-target="#nav-ready"
+                        type="button" role="tab" aria-controls="nav-ready" aria-selected="false">Ready for review
+                </button>
+                <button class="nav-link" id="nav-complete-tab" data-bs-toggle="tab" data-bs-target="#nav-complete"
+                        type="button" role="tab" aria-controls="nav-complete" aria-selected="false">Complete
+                </button>
+                <button class="nav-link" id="nav-overdue-tab" data-bs-toggle="tab" data-bs-target="#nav-overdue"
+                        type="button" role="tab" aria-controls="nav-overdue" aria-selected="false">Overdue
+                </button>
+                <button class="nav-link" id="nav-all-tab" data-bs-toggle="tab" data-bs-target="#nav-all"
+                        type="button" role="tab" aria-controls="nav-all" aria-selected="false">All
+                </button>
+            </div>
+        </nav>
+        <div class="tab-content table-responsive" id="nav-tabContent">
+            <table class="table table-hover  tab-pane fade show active" id="nav-in-progress" role="tabpanel" aria-labelledby="nav-in-progress-tab">
+                <tbody th:each="task : ${tasks}">
+                <tr class="table-primary"
+                    th:if="${task.parentTask} == null and ${task.task.status.id == 2}">
+                    <th scope="row">Task</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
+                           th:text="${task.task.name}"></a></td>
+                    <td>
+                        <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
+                        <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${task.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
+                           th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
+                    <td>
+                        <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td th:if="${currentUser == null or currentUser.id == user.id}">
+                        <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
+                            Create subtask
+                        </a>
+                    </td>
+                </tr>
+                <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}" th:if="${subtask.task.status.id == 2}">
+                    <th scope="row">Subtask</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
+                           th:text="${subtask.task.name}"></a></td>
+                    <td>
+                        <p th:text="'Status: '+${subtask.task.status.status}"></p>
+                        <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${subtask.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
+                           th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
+                    <td>
+                        <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${subtask.isActive()}" th:method="POST"
+                              th:action="@{/tasks/active}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-hover  tab-pane fade" id="nav-entering" role="tabpanel" aria-labelledby="nav-entering-tab">
+                <tbody th:each="task : ${tasks}">
+                <tr class="table-primary"
+                    th:if="${task.parentTask} == null and ${task.task.status.id == 1}">
+                    <th scope="row">Task</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
+                           th:text="${task.task.name}"></a></td>
+                    <td>
+                        <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
+                        <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${task.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
+                           th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
+                    <td>
+                        <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td th:if="${currentUser == null or currentUser.id == user.id}">
+                        <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
+                            Create subtask
+                        </a>
+                    </td>
+                </tr>
+                <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}" th:if="${subtask.task.status.id == 1}">
+                    <th scope="row">Subtask</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
+                           th:text="${subtask.task.name}"></a></td>
+                    <td>
+                        <p th:text="'Status: '+${subtask.task.status.status}"></p>
+                        <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${subtask.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
+                           th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
+                    <td>
+                        <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${subtask.isActive()}" th:method="POST"
+                              th:action="@{/tasks/active}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-hover  tab-pane fade" id="nav-ready" role="tabpanel" aria-labelledby="nav-ready-tab">
+                <tbody th:each="task : ${tasks}">
+                <tr class="table-primary"
+                    th:if="${task.parentTask} == null and ${task.task.status.id == 3}">
+                    <th scope="row">Task</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
+                           th:text="${task.task.name}"></a></td>
+                    <td>
+                        <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
+                        <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${task.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
+                           th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
+                    <td>
+                        <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td th:if="${currentUser == null or currentUser.id == user.id}">
+                        <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
+                            Create subtask
+                        </a>
+                    </td>
+                </tr>
+                <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}" th:if="${subtask.task.status.id == 3}">
+                    <th scope="row">Subtask</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
+                           th:text="${subtask.task.name}"></a></td>
+                    <td>
+                        <p th:text="'Status: '+${subtask.task.status.status}"></p>
+                        <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${subtask.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
+                           th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
+                    <td>
+                        <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${subtask.isActive()}" th:method="POST"
+                              th:action="@{/tasks/active}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-hover  tab-pane fade" id="nav-complete" role="tabpanel" aria-labelledby="nav-complete-tab">
+                <tbody th:each="task : ${tasks}">
+                <tr class="table-primary"
+                    th:if="${task.parentTask} == null and ${task.task.status.id == 4}">
+                    <th scope="row">Task</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
+                           th:text="${task.task.name}"></a></td>
+                    <td>
+                        <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
+                        <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${task.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
+                           th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
+                    <td>
+                        <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td th:if="${currentUser == null or currentUser.id == user.id}">
+                        <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
+                            Create subtask
+                        </a>
+                    </td>
+                </tr>
+                <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}" th:if="${subtask.task.status.id == 4}">
+                    <th scope="row">Subtask</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
+                           th:text="${subtask.task.name}"></a></td>
+                    <td>
+                        <p th:text="'Status: '+${subtask.task.status.status}"></p>
+                        <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${subtask.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
+                           th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
+                    <td>
+                        <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${subtask.isActive()}" th:method="POST"
+                              th:action="@{/tasks/active}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-hover  tab-pane fade" id="nav-overdue" role="tabpanel" aria-labelledby="nav-overdue-tab">
+                <tbody th:each="task : ${tasks}">
+                <tr class="table-primary"
+                    th:if="${task.parentTask} == null and ${task.task.isOverdue()}">
+                    <th scope="row">Task</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
+                           th:text="${task.task.name}"></a></td>
+                    <td>
+                        <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
+                        <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${task.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
+                           th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
+                    <td>
+                        <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td th:if="${currentUser == null or currentUser.id == user.id}">
+                        <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
+                            Create subtask
+                        </a>
+                    </td>
+                </tr>
+                <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}" th:if="${subtask.task.isOverdue()}">
+                    <th scope="row">Subtask</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
+                           th:text="${subtask.task.name}"></a></td>
+                    <td>
+                        <p th:text="'Status: '+${subtask.task.status.status}"></p>
+                        <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${subtask.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
+                           th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
+                    <td>
+                        <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${subtask.isActive()}" th:method="POST"
+                              th:action="@{/tasks/active}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-hover  tab-pane fade" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
+                <tbody th:each="task : ${tasks}">
+                <tr class="table-primary"
+                    th:if="${task.parentTask} == null">
+                    <th scope="row">Task</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${task.getId()}|"
+                           th:text="${task.task.name}"></a></td>
+                    <td>
+                        <p th:if="${task.task.modifiable}" th:text="'Status: '+${task.task.status.status}"></p>
+                        <div th:text="|${task.task.isOverdue() ? '(Overdue) ' : ' '}${task.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${task.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != task.task.createdBy.id and task.task.id != 1}"
+                           th:text="'Assigned by: '+${task.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${task.id}|">Edit</a></td>
+                    <td>
+                        <form th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id or task.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${task.isActive()}" th:method="POST" th:action="@{/tasks/active}">
+                            <input th:value="${task.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td th:if="${currentUser == null or currentUser.id == user.id}">
+                        <a th:href="|@{/tasks/save?parent=}${task.getId()}|">
+                            Create subtask
+                        </a>
+                    </td>
+                </tr>
+                <tr class="table-secondary" th:each="subtask : ${task.getChildrenTasks()}">
+                    <th scope="row">Subtask</th>
+                    <td><a class="navbar-brand" th:href="|@{/tasks/}${subtask.getId()}|"
+                           th:text="${subtask.task.name}"></a></td>
+                    <td>
+                        <p th:text="'Status: '+${subtask.task.status.status}"></p>
+                        <div th:text="|${subtask.task.isOverdue() ? '(Overdue) ' : ' '}${subtask.isActive() ? '(Active)' : ''}|"></div>
+                    </td>
+                    <td>
+                        <div th:text="${subtask.getActiveTime()}"></div>
+                    </td>
+                    <td>
+                        <p th:if="${user.id != subtask.task.createdBy.id and subtask.task.id != 1}"
+                           th:text="'Assigned by: '+${subtask.task.createdBy.username}"></p>
+                    </td>
+                    <td>
+                        <a th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                           th:href="|@{/tasks/save?id=}${subtask.id}|">Edit</a>
+                    <td>
+                        <form th:if="${subtask.task.modifiable} and ${currentUser == null or currentUser.id == user.id or subtask.task.createdBy.id == currentUser.id}"
+                              th:method="POST" th:action="@{/tasks/delete}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
+                    <td>
+                        <form th:if="${currentUser == null or currentUser.id == user.id}"
+                              th:unless="${subtask.isActive()}" th:method="POST"
+                              th:action="@{/tasks/active}">
+                            <input th:value="${subtask.id}" name="task" hidden>
+                            <input type="submit" value="Set active">
+                        </form>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
         <a th:if="${currentUser == null or currentUser.id == user.id}" th:href="@{/tasks/save}">Create new task</a>
         <a th:if="${currentUser != null}" th:href="|@{/admin/users/}${user.id}@{/assign}|">Assign task</a>
     </div>

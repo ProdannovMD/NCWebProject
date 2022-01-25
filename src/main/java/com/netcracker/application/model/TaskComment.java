@@ -2,10 +2,14 @@ package com.netcracker.application.model;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "task_comments")
 public class TaskComment {
+    private static final String DATE_TIME_FORMAT = "yyyy.MM.dd HH:mm:ss";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -28,6 +32,10 @@ public class TaskComment {
 
     public Instant getCreationTime() {
         return creationTime;
+    }
+
+    public String getCreationTimeFormatted() {
+        return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).withZone(ZoneId.systemDefault()).format(creationTime);
     }
 
     public void setCreationTime(Instant creationTime) {

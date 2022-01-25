@@ -26,7 +26,7 @@
                 <td><a class="navbar-brand" th:href="|@{/admin/tasks/}${entry.task.id}|"
                        th:text="${entry.task.name}"></a></td>
                 <td><p th:text="${entry.action}"></p></td>
-                <td><p th:text="${entry.datetime}"></p></td>
+                <td><p th:text="${entry.getDatetimeFormatted()}"></p></td>
             </tr>
             </tbody>
         </table>

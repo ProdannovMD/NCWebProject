@@ -2,10 +2,14 @@ package com.netcracker.application.model;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "task_history")
 public class TaskHistory {
+    private static final String DATE_TIME_FORMAT = "yyyy.MM.dd HH:mm:ss";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -51,6 +55,10 @@ public class TaskHistory {
 
     public Instant getDatetime() {
         return datetime;
+    }
+
+    public String getDatetimeFormatted() {
+        return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).withZone(ZoneId.systemDefault()).format(datetime);
     }
 
     public void setDatetime(Instant datetime) {

@@ -158,6 +158,7 @@ public class AdminController {
     @GetMapping("/tasks")
     public String getAllTasks(Model model) {
         List<Task> tasks = taskService.getAllTasks();
+        Collections.reverse(tasks);
 
         model.addAttribute("tasks", tasks);
 

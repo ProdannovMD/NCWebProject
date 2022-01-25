@@ -4,11 +4,15 @@ import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Entity
 @Table(name = "tasks")
 public class Task {
+    private static final String DATE_TIME_FORMAT = "yyyy.MM.dd HH:mm:ss";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -50,12 +54,20 @@ public class Task {
         return completedTime;
     }
 
+    public String getCompletedTimeFormatted() {
+        return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).withZone(ZoneId.systemDefault()).format(completedTime);
+    }
+
     public void setCompletedTime(Instant completedTime) {
         this.completedTime = completedTime;
     }
 
     public Instant getDueTime() {
         return dueTime;
+    }
+
+    public String getDueTimeFormatted() {
+        return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).withZone(ZoneId.systemDefault()).format(dueTime);
     }
 
     public void setDueTime(Instant dueTime) {
@@ -74,12 +86,20 @@ public class Task {
         return modifiedTime;
     }
 
+    public String getModifiedTimeFormatted() {
+        return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).withZone(ZoneId.systemDefault()).format(modifiedTime);
+    }
+
     public void setModifiedTime(Instant modifiedTime) {
         this.modifiedTime = modifiedTime;
     }
 
     public Instant getCreatedTime() {
         return createdTime;
+    }
+
+    public String getCreatedTimeFormatted() {
+        return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).withZone(ZoneId.systemDefault()).format(createdTime);
     }
 
     public void setCreatedTime(Instant createdTime) {

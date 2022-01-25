@@ -40,30 +40,36 @@ public class UsersTaskConverter implements Converter<UsersTaskForm, UsersTask> {
         User currentUser = userService.getCurrentUser();
         Task newTask;
         UsersTask usersTask;
+        boolean isNew = false;
         if (Objects.isNull(source.getId())) {
             usersTask = new UsersTask();
             newTask = new Task();
+            isNew = true;
         }
         else {
             usersTask = usersTaskService.getUsersTaskById(source.getId());
             newTask = usersTask.getTask();
         }
         newTask.setName(source.getName());
-        newTask.setCreatedBy(currentUser);
-        newTask.setCreatedTime(Instant.now());
+        if (isNew) {
+            newTask.setCreatedBy(currentUser);
+            newTask.setCreatedTime(Instant.now());
+            newTask.setStatus(statusService.getDefaultStatus());
+        }
         newTask.setModifiedTime(Instant.now());
-        newTask.setStatus(statusService.getDefaultStatus());
         newTask.setDescription(source.getDescription());
         if (Objects.nonNull(source.getDueTime()) && !source.getDueTime().isEmpty()) {
             try {
                 LocalDate date = LocalDate.parse(source.getDueTime());
-                newTask.setDueTime(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                newTask.setDueTime(date.atStartOfDay(ZoneId.systemDefault()).plusDays(1).minusSeconds(1).toInstant());
             } catch (DateTimeParseException | IllegalArgumentException ignore) {}
         }
 
         usersTask.setId(source.getId());
         usersTask.setTask(newTask);
-        usersTask.setUser(currentUser);
+        if (isNew)
+            usersTask.setUser(currentUser);
         if (source.getParent() > 0) {
             UsersTask parentTask = usersTaskService.getUsersTaskById(source.getParent());
             usersTask.setParentTask(parentTask);

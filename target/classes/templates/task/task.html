@@ -26,11 +26,11 @@
             <!--            </form>-->
             <div th:if="${task.id != 1}">
                 <p th:text="'Created by: '+${task.createdBy.username}"></p>
-                <p th:text="'Created: '+${task.createdTime}"></p>
-                <p th:text="'Last modified: '+${task.modifiedTime}"></p>
+                <p th:text="'Created: '+${task.getCreatedTimeFormatted()}"></p>
+                <p th:text="'Last modified: '+${task.getModifiedTimeFormatted()}"></p>
                 <p th:if="${task.dueTime != null}"
-                   th:text="|Due to: ${task.dueTime}${task.isOverdue() ? ' (Overdue)' : ''}|"></p>
-                <p th:if="${task.status.id >= 3}" th:text="|'Completed on: '${task.completedTime}|"></p>
+                   th:text="|Due to: ${task.getDueTimeFormatted()}${task.isOverdue() ? ' (Overdue)' : ''}|"></p>
+                <p th:if="${task.status.id >= 3}" th:text="|Completed on: ${task.getCompletedTimeFormatted()}|"></p>
             </div>
             <!--            <a th:if="${task.task.modifiable} and ${currentUser == null or currentUser.id == user.id}"-->
             <!--               th:href="|@{/tasks/save?id=}${task.id}|">Edit</a>-->
@@ -65,7 +65,7 @@
             <p>Comments:</p>
             <ul>
                 <li th:each="comment : ${comments}"
-                    th:text="${comment.user.username}+': '+${comment.comment}+' ('+${comment.creationTime}+')'"></li>
+                    th:text="${comment.user.username}+': '+${comment.comment}+' ('+${comment.getCreationTimeFormatted()}+')'"></li>
             </ul>
         </div>
 
