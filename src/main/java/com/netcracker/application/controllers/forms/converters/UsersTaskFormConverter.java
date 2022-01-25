@@ -27,14 +27,6 @@ public class UsersTaskFormConverter implements Converter<UsersTask, UsersTaskFor
     public UsersTaskForm convert(UsersTask source) {
         User currentUser = userService.getCurrentUser();
         UsersTaskForm form = new UsersTaskForm();
-        if (
-                !currentUser.getId().equals(source.getUser().getId()) &&
-                        !currentUser.getId().equals(source.getTask().getCreatedBy().getId())
-        )
-            throw new AccessDeniedException("Illegal access to a task");
-
-        if (!source.getTask().getModifiable())
-            throw new AccessDeniedException("Task is not modifiable");
 
         form.setId(source.getId());
         if (Objects.nonNull(source.getParentTask()))

@@ -99,6 +99,16 @@ public class UsersTaskController {
                 form.setParent(parent);
         } else {
             UsersTask task = usersTaskService.getUsersTaskById(id);
+
+            if (
+                    !currentUser.getId().equals(task.getUser().getId()) &&
+                            !currentUser.getId().equals(task.getTask().getCreatedBy().getId())
+            )
+                throw new AccessDeniedException("Illegal access to a task");
+
+            if (!task.getTask().getModifiable())
+                throw new AccessDeniedException("Task is not modifiable");
+
             form = conversionService.convert(task, UsersTaskForm.class);
         }
 
@@ -118,7 +128,18 @@ public class UsersTaskController {
             return "task/saveUsersTask";
         }
 
-        usersTaskService.saveUsersTask(conversionService.convert(form, UsersTask.class));
+        User currentUser = userService.getCurrentUser();
+        UsersTask task = conversionService.convert(form, UsersTask.class);
+        if (
+                !currentUser.getId().equals(task.getUser().getId()) &&
+                        !currentUser.getId().equals(task.getTask().getCreatedBy().getId())
+        )
+            throw new AccessDeniedException("Illegal access to a task");
+
+        if (!task.getTask().getModifiable())
+            throw new AccessDeniedException("Task is not modifiable");
+
+        usersTaskService.saveUsersTask(task);
         return "redirect:/profile";
     }
 

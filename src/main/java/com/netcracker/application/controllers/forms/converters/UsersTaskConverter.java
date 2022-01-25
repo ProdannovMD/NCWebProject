@@ -23,7 +23,6 @@ import java.util.Objects;
 
 @Component
 public class UsersTaskConverter implements Converter<UsersTaskForm, UsersTask> {
-    private final String DATE_FORMAT = "yyyy-MM-dd";
     private final UserService userService;
     private final UsersTaskService usersTaskService;
     private final StatusService statusService;
