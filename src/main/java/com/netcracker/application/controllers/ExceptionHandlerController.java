@@ -1,6 +1,8 @@
 package com.netcracker.application.controllers;
 
 import com.netcracker.application.controllers.exceptions.ResourceNotFoundException;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
@@ -12,12 +14,15 @@ import java.util.Objects;
 
 @ControllerAdvice
 public class ExceptionHandlerController {
+    private final Logger logger = LogManager.getLogger("main.java", ExceptionHandlerController.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String resourceNotFound(ResourceNotFoundException ex, Model model) {
         if (Objects.nonNull(ex.getMessage()))
             model.addAttribute("message", ex.getMessage());
+
+        logger.error(ex);
 
         return "error/404";
     }
@@ -28,6 +33,8 @@ public class ExceptionHandlerController {
         if (Objects.nonNull(ex.getMessage()))
             model.addAttribute("message", ex.getMessage());
 
+        logger.error(ex);
+
         return "error/403";
     }
 
@@ -37,6 +44,8 @@ public class ExceptionHandlerController {
         ex.printStackTrace();
         if (Objects.nonNull(ex.getMessage()))
             model.addAttribute("message", ex.getMessage());
+
+        logger.error(ex);
 
         return "error/500";
     }

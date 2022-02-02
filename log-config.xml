@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="http://maven.apache.org/POM/4.0.0"
+               xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 file:///C:\Users\Professional\IdeaProjects\NetCracker\NCProject\resources\schema\Configuration.xsd">
+  <Handlers>
+    <Console name="consoleHandler">
+      <PatternLayout pattern="Logger: %d{HH:mm:ss.SSS}::%N [%t] %level %logger{36} - %msg%n"/>
+    </Console>
+    <File name="fileHandler" fileName="src/main/resources/logs/logs.txt">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS}::%N [%t] %level %logger{36} - %msg"/>
+    </File>
+  </Handlers>
+  <Filters>
+    <Level name="infoLevelFilter" level="info"/>
+  </Filters>
+  <Loggers>
+    <Logger name="main.java.com.netcracker.application">
+      <HandlerRef ref="consoleHandler"/>
+      <HandlerRef ref="fileHandler"/>
+      <FilterRef ref="infoLevelFilter"/>
+    </Logger>
+    <Logger name="com.netcracker.application">
+      <HandlerRef ref="consoleHandler"/>
+      <HandlerRef ref="fileHandler"/>
+      <FilterRef ref="infoLevelFilter"/>
+    </Logger>
+  </Loggers>
+</Configuration>

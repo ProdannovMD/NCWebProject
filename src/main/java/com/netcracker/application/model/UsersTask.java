@@ -1,12 +1,10 @@
 package com.netcracker.application.model;
 
-import javafx.util.Pair;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.time.*;
-import java.time.chrono.ChronoLocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -123,21 +121,6 @@ public class UsersTask {
     }
 
     public Long getActiveTimeRaw() {
-//        if (usages.size() == 0)
-//            return 0L;
-//
-//        long seconds = 0;
-//        for (ActiveTask usage : usages) {
-//            Instant startTime = usage.getStartTime();
-//            Instant endTime = usage.getEndTime();
-//            if (Objects.isNull(endTime))
-//                endTime = Instant.now();
-//            LocalDateTime startDate = LocalDateTime.ofInstant(startTime, ZoneId.systemDefault());
-//            LocalDateTime endDate = LocalDateTime.ofInstant(endTime, ZoneId.systemDefault());
-//            Duration duration = Duration.between(startDate, endDate);
-//            seconds += duration.getSeconds();
-//        }
-//        return seconds;
         return getActiveTimeForDateRaw(LocalDate.MIN, LocalDate.MAX);
     }
 

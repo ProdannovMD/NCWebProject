@@ -5,6 +5,8 @@ import com.netcracker.application.model.User;
 import com.netcracker.application.repository.UserRepository;
 import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +18,7 @@ import java.util.Objects;
 
 @Service("userDetailsService")
 public class UserServiceImpl implements UserService {
+    private final Logger logger = LogManager.getLogger("main.java", UserService.class);
     private final UserRepository userRepository;
     private final UsersTaskService usersTaskService;
 
@@ -30,12 +33,15 @@ public class UserServiceImpl implements UserService {
 
     public void createUser(User user) {
         userRepository.save(user);
+        logger.info("New user created: " + user);
         usersTaskService.addDefaultTaskForUser(user);
+        logger.info("For user " + user + " added default task");
     }
 
     @Override
     public void updateUser(User user) {
         userRepository.save(user);
+        logger.info("User " + user + " has been updated");
     }
 
     @Override

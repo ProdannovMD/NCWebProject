@@ -72,4 +72,15 @@ public class TaskHistory {
     public void setId(Long id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "TaskHistory{" +
+                "id=" + id +
+                ", datetime=" + datetime +
+                ", user=" + user +
+                ", task=" + task +
+                ", action='" + action + '\'' +
+                '}';
+    }
 }

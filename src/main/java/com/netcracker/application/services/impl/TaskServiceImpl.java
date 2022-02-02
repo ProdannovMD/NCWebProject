@@ -6,6 +6,8 @@ import com.netcracker.application.repository.TaskRepository;
 import com.netcracker.application.repository.UsersTaskRepository;
 import com.netcracker.application.services.TaskService;
 import com.netcracker.application.services.UsersTaskService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.Objects;
 
 @Service
 public class TaskServiceImpl implements TaskService {
+    private final Logger logger = LogManager.getLogger("main.java", TaskService.class);
     private final TaskRepository taskRepository;
     private final UsersTaskRepository usersTaskRepository;
 
@@ -43,7 +46,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTask(Task task) {
-        if (!isUsed(task))
+        if (!isUsed(task)) {
             taskRepository.delete(task);
+            logger.info("Task " + task + " has been deleted");
+        }
     }
 }

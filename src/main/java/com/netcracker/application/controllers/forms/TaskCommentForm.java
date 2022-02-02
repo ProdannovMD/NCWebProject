@@ -28,4 +28,13 @@ public class TaskCommentForm {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
+    @Override
+    public String toString() {
+        return "TaskCommentForm{" +
+                "user=" + user +
+                ", task=" + task +
+                ", comment='" + comment + '\'' +
+                '}';
+    }
 }

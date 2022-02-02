@@ -11,6 +11,8 @@ import com.netcracker.application.model.UsersTask;
 import com.netcracker.application.services.StatusService;
 import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.convert.ConversionService;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/tasks")
 public class UsersTaskController {
-
+    private final Logger logger = LogManager.getLogger("main.java", UsersTaskController.class);
     private final UserService userService;
     private final UsersTaskService usersTaskService;
     private final StatusService statusService;
@@ -83,6 +85,9 @@ public class UsersTaskController {
         model.addAttribute("task", usersTask);
         model.addAttribute("statuses", statusService.getAllStatuses());
         model.addAttribute("form", form);
+
+        logger.info("User " + currentUser + " accessed '/tasks/" + id + "' page");
+
         return "task/usersTask";
     }
 
@@ -114,6 +119,9 @@ public class UsersTaskController {
 
         model.addAttribute("tasks", tasks);
         model.addAttribute("form", form);
+
+        logger.info("User " + currentUser + " accessed '/tasks/save' page");
+
         return "task/saveUsersTask";
     }
 
@@ -121,14 +129,17 @@ public class UsersTaskController {
     public String saveUsersTask(
             @Valid @ModelAttribute("form") UsersTaskForm form,
             BindingResult bindingResult, Model model) {
+        User currentUser = userService.getCurrentUser();
         if (bindingResult.hasErrors()) {
             List<String> errorMessages = bindingResult.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.toList());
             model.addAttribute("errors", errorMessages);
+
+            logger.info("Task save by user " + currentUser + " failed with errors: " + errorMessages);
+
             return "task/saveUsersTask";
         }
 
-        User currentUser = userService.getCurrentUser();
         UsersTask task = conversionService.convert(form, UsersTask.class);
         if (
                 !currentUser.getId().equals(task.getUser().getId()) &&
@@ -140,6 +151,9 @@ public class UsersTaskController {
             throw new AccessDeniedException("Task is not modifiable");
 
         usersTaskService.saveUsersTask(task);
+
+        logger.info("Task save by user " + currentUser + " successful");
+
         return "redirect:/profile";
     }
 
@@ -155,6 +169,8 @@ public class UsersTaskController {
 
         usersTaskService.deleteUsersTaskById(id);
 
+        logger.info("Task deletion by user " + currentUser + " successful");
+
         return "redirect:/profile";
     }
 
@@ -165,6 +181,8 @@ public class UsersTaskController {
         UsersTask activeTask = userTasks.stream()
                 .filter(UsersTask::isActive)
                 .findFirst().orElseThrow(IllegalStateException::new);
+
+        logger.info("User " + currentUser + " accessed '/tasks/active' page");
 
         return String.format("redirect:/tasks/%d", activeTask.getId());
     }
@@ -179,16 +197,24 @@ public class UsersTaskController {
         User currentUser = userService.getCurrentUser();
         UsersTask task = usersTaskService.getUsersTaskById(taskId);
         usersTaskService.setUsersTaskActiveByUserId(currentUser.getId(), task);
+
+        logger.info("Active task changed by user " + currentUser + " successfully");
+
         return "redirect:/profile";
     }
 
     @PostMapping("/change_status")
     public String changeStatus(@Valid @ModelAttribute("form") StatusForm form, BindingResult bindingResult) {
-        if (bindingResult.hasErrors())
+        User currentUser = userService.getCurrentUser();
+        if (bindingResult.hasErrors()) {
+            logger.info("Task status change by user " + currentUser + " failed");
             return "redirect:/profile";
+        }
 
         UsersTask usersTask = conversionService.convert(form, UsersTask.class);
         usersTaskService.saveUsersTask(usersTask);
+
+        logger.info("Task status changed by user " + currentUser + " successfully");
 
         return String.format("redirect:/tasks/%d", usersTask.getId());
     }
@@ -200,9 +226,9 @@ public class UsersTaskController {
 
         if (
                 !usersTask.getTask().getModifiable() || (
-                                !currentUser.getId().equals(usersTask.getUser().getId()) &&
-                                        !currentUser.getId().equals(usersTask.getTask().getCreatedBy().getId())
-                        )
+                        !currentUser.getId().equals(usersTask.getUser().getId()) &&
+                                !currentUser.getId().equals(usersTask.getTask().getCreatedBy().getId())
+                )
         ) {
             throw new AccessDeniedException("Illegal access to a task");
         }
@@ -214,13 +240,18 @@ public class UsersTaskController {
         model.addAttribute("task", usersTask);
         model.addAttribute("form", form);
 
+        logger.info("User " + currentUser + " accessed '/tasks/" + id + "/comments/save' page");
+
         return "comment/saveTaskComment";
     }
 
     @PostMapping("/{id}/comments/save")
     public String saveComment(@Valid @ModelAttribute("form") TaskCommentForm form, @PathVariable Long id) {
+        User currentUser = userService.getCurrentUser();
         TaskComment comment = conversionService.convert(form, TaskComment.class);
         usersTaskService.saveTaskComment(comment);
+
+        logger.info("User " + currentUser + " added task comment successfully");
 
         return String.format("redirect:/tasks/%d", id);
     }

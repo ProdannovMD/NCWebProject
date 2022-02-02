@@ -7,6 +7,8 @@ import com.netcracker.application.model.UsersTask;
 import com.netcracker.application.services.StatusService;
 import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,7 @@ import java.util.Objects;
 
 @Component
 public class UsersTaskConverter implements Converter<UsersTaskForm, UsersTask> {
+    private final Logger logger = LogManager.getLogger("main.java", UsersTaskConverter.class);
     private final UserService userService;
     private final UsersTaskService usersTaskService;
     private final StatusService statusService;
@@ -73,6 +76,9 @@ public class UsersTaskConverter implements Converter<UsersTaskForm, UsersTask> {
             UsersTask parentTask = usersTaskService.getUsersTaskById(source.getParent());
             usersTask.setParentTask(parentTask);
         }
+
+        logger.debug("Users task form " + source + " was converted into users task " + usersTask);
+
         return usersTask;
     }
 }

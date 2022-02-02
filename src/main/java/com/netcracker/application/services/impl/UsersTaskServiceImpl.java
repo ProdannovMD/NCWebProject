@@ -8,6 +8,8 @@ import com.netcracker.application.repository.TaskRepository;
 import com.netcracker.application.repository.UsersTaskRepository;
 import com.netcracker.application.services.TaskHistoryService;
 import com.netcracker.application.services.UsersTaskService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class UsersTaskServiceImpl implements UsersTaskService {
+    private static final Logger logger = LogManager.getLogger("main.java", UsersTaskService.class);
     private static final Long DEFAULT_TASK_ID = 1L;
     private static final String DATE_FORMAT_DAYS = "yyyy.MM.dd";
     private static final String DATE_FORMAT_MONTHS = "yyyy.MM";
@@ -95,6 +98,10 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         }
         usersTask.setTask(savedTask);
         usersTaskRepository.save(usersTask);
+        if (newTask)
+            logger.info("New users task has been created: " + usersTask);
+        else
+            logger.info("Users task has been updated: " + usersTask);
 
         taskHistoryService.saveTaskHistory(
                 usersTask.getUser(), usersTask.getTask(),
@@ -138,6 +145,7 @@ public class UsersTaskServiceImpl implements UsersTaskService {
         usersTask.getChildrenTasks().forEach(ct -> deleteUsersTaskById(ct.getId()));
 
         usersTaskRepository.delete(usersTask);
+        logger.info("Users task has been deleted: " + usersTask);
 
         taskHistoryService.saveTaskHistory(usersTask.getUser(), usersTask.getTask(), "Task deleted from users list");
     }
@@ -274,6 +282,7 @@ public class UsersTaskServiceImpl implements UsersTaskService {
     @Override
     public void saveTaskComment(TaskComment taskComment) {
         taskCommentRepository.save(taskComment);
+        logger.info("Task comment has been added: " + taskComment);
 
         taskHistoryService.saveTaskHistory(taskComment.getUser(), taskComment.getTask(), "Task comment added");
     }

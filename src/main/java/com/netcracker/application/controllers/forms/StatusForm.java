@@ -23,4 +23,12 @@ public class StatusForm {
     public void setStatus(Long status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "StatusForm{" +
+                "task=" + task +
+                ", status=" + status +
+                '}';
+    }
 }

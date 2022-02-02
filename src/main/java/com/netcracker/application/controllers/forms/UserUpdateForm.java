@@ -42,4 +42,11 @@ public class UserUpdateForm {
     public void setOldPassword(CharSequence oldPassword) {
         this.oldPassword = oldPassword;
     }
+
+    @Override
+    public String toString() {
+        return "UserUpdateForm{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }

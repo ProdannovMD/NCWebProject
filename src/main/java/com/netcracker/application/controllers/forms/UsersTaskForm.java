@@ -51,4 +51,15 @@ public class UsersTaskForm {
     public void setParent(Long parent) {
         this.parent = parent;
     }
+
+    @Override
+    public String toString() {
+        return "UsersTaskForm{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", parent=" + parent +
+                ", description='" + description + '\'' +
+                ", dueTime='" + dueTime + '\'' +
+                '}';
+    }
 }

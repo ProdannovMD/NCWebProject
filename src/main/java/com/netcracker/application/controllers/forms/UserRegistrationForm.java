@@ -48,8 +48,6 @@ public class UserRegistrationForm {
     public String toString() {
         return "UserRegistrationForm{" +
                 "name='" + name + '\'' +
-                ", password='" + password + '\'' +
-                ", confirmPassword='" + confirmPassword + '\'' +
                 '}';
     }
 }

@@ -6,6 +6,8 @@ import com.netcracker.application.model.TaskComment;
 import com.netcracker.application.model.User;
 import com.netcracker.application.services.TaskService;
 import com.netcracker.application.services.UserService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.time.Instant;
 
 @Component
 public class TaskCommentConverter implements Converter<TaskCommentForm, TaskComment> {
+    private final Logger logger = LogManager.getLogger("main.java", TaskCommentConverter.class);
     private final TaskService taskService;
     private final UserService userService;
 
@@ -33,6 +36,8 @@ public class TaskCommentConverter implements Converter<TaskCommentForm, TaskComm
         comment.setTask(task);
         comment.setUser(user);
         comment.setCreationTime(Instant.now());
+
+        logger.debug("Task comment form " + source + " was converted into task comment " + comment);
 
         return comment;
     }

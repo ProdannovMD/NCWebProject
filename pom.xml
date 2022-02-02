@@ -81,11 +81,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <!--        <dependency>-->
-<!--            <groupId>javax.validation</groupId>-->
-<!--            <artifactId>validation-api</artifactId>-->
-<!--            <version>2.0.1.Final</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.netcracker</groupId>
+            <artifactId>NCProject</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>

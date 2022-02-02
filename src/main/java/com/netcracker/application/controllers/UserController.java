@@ -1,12 +1,13 @@
 package com.netcracker.application.controllers;
 
-import com.netcracker.application.controllers.forms.UserRegistrationForm;
 import com.netcracker.application.controllers.forms.UserUpdateForm;
 import com.netcracker.application.controllers.validators.UserUpdateFormValidator;
 import com.netcracker.application.model.User;
 import com.netcracker.application.model.UsersTask;
 import com.netcracker.application.services.UserService;
 import com.netcracker.application.services.UsersTaskService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.convert.ConversionService;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/profile")
 public class UserController {
+    private final Logger logger = LogManager.getLogger("main.java", UserController.class);
     private final UserService userService;
     private final UsersTaskService usersTaskService;
 
@@ -58,13 +60,12 @@ public class UserController {
     public String profile(Model model) {
         User currentUser = userService.getCurrentUser();
         List<UsersTask> userTasks = usersTaskService.getUsersTasksByUserId(currentUser.getId());
-//        UsersTask activeTask = userTasks.stream()
-//                .filter(UsersTask::isActive)
-//                .findFirst().orElseThrow(IllegalStateException::new);
 
         model.addAttribute("user", currentUser);
         model.addAttribute("tasks", userTasks);
-//        model.addAttribute("activeTask", activeTask);
+
+        logger.info("User " + currentUser + " accessed '/profile' page");
+
         return "user/profile";
     }
 
@@ -73,6 +74,9 @@ public class UserController {
         User currentUser = userService.getCurrentUser();
         UserUpdateForm form = conversionService.convert(currentUser, UserUpdateForm.class);
         model.addAttribute("form", form);
+
+        logger.info("User " + currentUser + " accessed '/profile/edit' page");
+
         return "user/edit";
     }
 
@@ -81,10 +85,14 @@ public class UserController {
             @Valid @ModelAttribute("form") UserUpdateForm form,
             BindingResult bindingResult, Model model
     ) {
+        User currentUser = userService.getCurrentUser();
         if (bindingResult.hasErrors()) {
             List<String> errorMessages = bindingResult.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.toList());
             model.addAttribute("errors", errorMessages);
+
+            logger.info("Profile update by user " + currentUser + " failed with errors: " + errorMessages);
+
             return "user/edit";
         }
         User user = conversionService.convert(form, User.class);
@@ -92,6 +100,8 @@ public class UserController {
         userService.logoutUser();
 
         model.addAttribute("message", "Edit successful. You can login with new credentials");
+
+        logger.info("Profile update by user " + currentUser + " successful");
 
         return "auth/login";
     }

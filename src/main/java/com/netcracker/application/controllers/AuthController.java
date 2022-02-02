@@ -4,6 +4,8 @@ import com.netcracker.application.controllers.forms.UserRegistrationForm;
 import com.netcracker.application.controllers.validators.UserRegistrationFormValidator;
 import com.netcracker.application.model.User;
 import com.netcracker.application.services.impl.UserServiceImpl;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Controller
 public class AuthController {
-
+    private final Logger logger = LogManager.getLogger("main.java", AuthController.class);
     private final UserServiceImpl userService;
     private final UserRegistrationFormValidator userRegistrationValidator;
     private ConversionService conversionService;
@@ -51,6 +53,9 @@ public class AuthController {
     @GetMapping("/registration")
     public String registration(Model model) {
         model.addAttribute("form", new UserRegistrationForm());
+
+        logger.info("'/registration' page has been accessed");
+
         return "auth/registration";
     }
 
@@ -61,6 +66,8 @@ public class AuthController {
 
         if (Objects.nonNull(logout))
             model.addAttribute("message", "Logout successful");
+
+        logger.info("'/login' page has been accessed");
 
         return "auth/login";
     }
@@ -76,10 +83,12 @@ public class AuthController {
                     .stream().map(ObjectError::getDefaultMessage)
                     .collect(Collectors.toList());
             model.addAttribute("errors", errorMessages);
+            logger.info("Registration failed with errors: " + errorMessages);
             return "auth/registration";
         }
 
         userService.createUser(conversionService.convert(userRegistrationForm, User.class));
+        logger.info("Registration has been successful");
         return "redirect:/";
     }
 }

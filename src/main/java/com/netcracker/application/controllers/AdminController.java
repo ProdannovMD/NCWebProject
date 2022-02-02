@@ -4,6 +4,8 @@ import com.netcracker.application.controllers.forms.AssignTaskForm;
 import com.netcracker.application.controllers.forms.StatusForm;
 import com.netcracker.application.model.*;
 import com.netcracker.application.services.*;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
+    private final Logger logger = LogManager.getLogger("main.java", AdminController.class);
     private final String DATE_INPUT_FORMAT = "yyyy-MM-dd";
     private final UserService userService;
     private final UsersTaskService usersTaskService;
@@ -61,6 +64,8 @@ public class AdminController {
         model.addAttribute("users", users);
         model.addAttribute("currentUser", currentUser);
 
+        logger.info("User " + currentUser + " accessed '/admin/users' page");
+
         return "user/users";
     }
 
@@ -76,6 +81,8 @@ public class AdminController {
         model.addAttribute("user", user);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("tasks", userTasks);
+
+        logger.info("User " + currentUser + " accessed '/admin/users/" + id + "' page");
 
         return "user/profile";
     }
@@ -107,13 +114,18 @@ public class AdminController {
         model.addAttribute("user", user);
         model.addAttribute("form", form);
 
+        logger.info("User " + currentUser + " accessed '/admin/users/" + id + "/assign' page");
+
         return "task/assignTask";
     }
 
     @PostMapping("/users/{id}/assign")
     public String assignTask(@PathVariable Long id, @ModelAttribute("form") AssignTaskForm form) {
+        User currentUser = userService.getCurrentUser();
         UsersTask usersTask = conversionService.convert(form, UsersTask.class);
         usersTaskService.saveUsersTask(usersTask);
+
+        logger.info("Task " + usersTask + " was assigned by user " + currentUser);
 
         return String.format("redirect:/admin/users/%d", id);
     }
@@ -139,11 +151,14 @@ public class AdminController {
         model.addAttribute("form", form);
         model.addAttribute("currentUser", currentUser);
 
+        logger.info("User " + currentUser + " accessed '/admin/users/" + id + "/tasks/" + task + "' page");
+
         return "task/usersTask";
     }
 
     @GetMapping("/tasks/history")
     public String getTaskHistory(Long task, Long user, Model model) {
+        User currentUser = userService.getCurrentUser();
         List<TaskHistory> history = taskHistoryService.getAllTaskHistory();
         if (Objects.nonNull(task))
             history = history.stream().filter(h -> h.getTask().getId().equals(task)).collect(Collectors.toList());
@@ -154,11 +169,14 @@ public class AdminController {
 
         model.addAttribute("history", history);
 
+        logger.info("User " + currentUser + " accessed '/admin/tasks/history' page");
+
         return "history/taskHistory";
     }
 
     @GetMapping("/tasks")
     public String getAllTasks(Model model) {
+        User currentUser = userService.getCurrentUser();
         List<Task> tasks = taskService.getAllTasks();
         Collections.reverse(tasks);
         List<Task> usedTasks = tasks.stream().filter(taskService::isUsed).collect(Collectors.toList());
@@ -167,12 +185,15 @@ public class AdminController {
         model.addAttribute("usedTasks", usedTasks);
         model.addAttribute("unusedTasks", unusedTasks);
 
+        logger.info("User " + currentUser + " accessed '/admin/tasks' page");
+
         return "task/tasks";
     }
 
     @GetMapping("/tasks/{id}/statistics")
     public String getTaskStatistics(@PathVariable Long id, String start, String end, Long userId, Model model) {
         Task task = taskService.getTaskById(id);
+        User currentUser = userService.getCurrentUser();
 
         LocalDate startDate = LocalDate.MIN;
         LocalDate endDate = LocalDate.MAX;
@@ -212,12 +233,15 @@ public class AdminController {
         model.addAttribute("end", end);
         model.addAttribute("userId", userId);
 
+        logger.info("User " + currentUser + " accessed '/admin/tasks/" + id + "/statistics' page");
+
         return "statistics/adminStatistics";
     }
 
     @GetMapping("/tasks/{id}")
     public String getTask(@PathVariable Long id, Model model) {
         Task task = taskService.getTaskById(id);
+        User currentUser = userService.getCurrentUser();
         List<UsersTask> usersTasks = usersTaskService.getUsersTasksByTask(task);
         List<TaskComment> comments = usersTaskService.getTaskCommentsForTask(task);
 
@@ -225,13 +249,18 @@ public class AdminController {
         model.addAttribute("usersTasks", usersTasks);
         model.addAttribute("comments", comments);
 
+        logger.info("User " + currentUser + " accessed '/admin/tasks/" + id + "' page");
+
         return "task/task";
     }
 
     @PostMapping("/tasks/{id}/delete")
     public String deleteTask(@PathVariable Long id) {
         Task task = taskService.getTaskById(id);
+        User currentUser = userService.getCurrentUser();
         taskService.deleteTask(task);
+
+        logger.info("User " + currentUser + " accessed '/admin/tasks/" + id + "/delete' page");
 
         return "redirect:/admin/tasks";
     }

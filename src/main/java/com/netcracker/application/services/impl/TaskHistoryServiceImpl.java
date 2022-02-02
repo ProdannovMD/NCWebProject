@@ -5,6 +5,8 @@ import com.netcracker.application.model.TaskHistory;
 import com.netcracker.application.model.User;
 import com.netcracker.application.repository.TaskHistoryRepository;
 import com.netcracker.application.services.TaskHistoryService;
+import com.netcracker.logging.LogManager;
+import com.netcracker.logging.loggers.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,7 @@ import java.util.List;
 
 @Service
 public class TaskHistoryServiceImpl implements TaskHistoryService {
-
+    private final Logger logger = LogManager.getLogger("main.java", TaskHistoryService.class);
     private final TaskHistoryRepository taskHistoryRepository;
 
     @Autowired
@@ -24,6 +26,7 @@ public class TaskHistoryServiceImpl implements TaskHistoryService {
     @Override
     public void saveTaskHistory(TaskHistory taskHistory) {
         taskHistoryRepository.save(taskHistory);
+        logger.info("New task history entry added: " + taskHistory);
     }
 
     @Override

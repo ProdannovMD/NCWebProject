@@ -28,4 +28,13 @@ public class AssignTaskForm {
     public void setTask(Long task) {
         this.task = task;
     }
+
+    @Override
+    public String toString() {
+        return "AssignTaskForm{" +
+                "user=" + user +
+                ", task=" + task +
+                ", parent=" + parent +
+                '}';
+    }
 }
